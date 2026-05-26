@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>SOUND-ANALYZER + TUNING-MATRIX</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#020507;
+  --panel:rgba(4,11,18,0.97);
+  --a:#ffaa00;--a2:rgba(255,170,0,0.11);--a3:rgba(255,170,0,0.25);
+  --c:#00e5ff;--c2:rgba(0,229,255,0.11);--c3:rgba(0,229,255,0.25);
+  --g:#00ff88;--r:#ff3344;
+  --t:#b8ccd6;--d:#384c56;
+  --bc:rgba(0,229,255,0.2);--ba:rgba(255,170,0,0.2);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:13px;min-height:100vh}
+body::after{
+  content:'';position:fixed;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.035) 2px,rgba(0,0,0,.035) 4px);
+  pointer-events:none;z-index:9999
+}
+select option{background:#0a1520;color:var(--t)}
+
+/* ─── APP SHELL ─── */
+.app{display:flex;flex-direction:column;min-height:100vh}
+
+/* ─── HEADER ─── */
+.hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 22px;background:rgba(2,5,10,.98);
+  border-bottom:1px solid var(--bc);position:sticky;top:0;z-index:100;
+  gap:16px;flex-wrap:wrap
+}
+.logo{font-family:'Orbitron',monospace;font-weight:900;font-size:17px;display:flex;align-items:center;gap:7px;white-space:nowrap}
+.la{color:var(--a);text-shadow:0 0 18px rgba(255,170,0,.8)}
+.lt{color:var(--c);text-shadow:0 0 18px rgba(0,229,255,.8)}
+.ld{color:var(--d);font-size:11px}
+.hsub{font-size:9px;color:var(--d);letter-spacing:.18em;margin-top:2px}
+.tabs{display:flex;gap:3px}
+.tab{
+  background:transparent;border:1px solid var(--bc);color:var(--d);
+  font-family:'Share Tech Mono',monospace;font-size:11px;
+  padding:7px 14px;cursor:pointer;transition:all .17s;letter-spacing:.07em
+}
+.tab:hover{border-color:var(--c);color:var(--c)}
+.tab.on{border-color:var(--c);background:var(--c2);color:var(--c);text-shadow:0 0 8px var(--c)}
+
+/* ─── MAIN ─── */
+.main{flex:1;padding:16px 22px;max-width:1140px;margin:0 auto;width:100%}
+
+/* ─── PANEL ─── */
+.panel{background:var(--panel);border:1px solid var(--bc);padding:18px;
+  box-shadow:0 0 50px rgba(0,229,255,.03),inset 0 1px 0 rgba(0,229,255,.06)}
+.ph{display:flex;align-items:center;gap:12px;margin-bottom:14px;
+  padding-bottom:12px;border-bottom:1px solid rgba(0,229,255,.14);flex-wrap:wrap}
+.pt{font-family:'Orbitron',monospace;font-weight:700;font-size:14px;
+  color:var(--c);text-shadow:0 0 12px rgba(0,229,255,.7);letter-spacing:.08em}
+.badge{font-size:10px;padding:2px 8px;border:1px solid var(--ba);color:var(--a);letter-spacing:.13em}
+.badge.live{border-color:var(--g);color:var(--g);text-shadow:0 0 8px var(--g);animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+
+/* ─── BUTTONS ─── */
+.mbtn{
+  font-family:'Share Tech Mono',monospace;font-size:12px;
+  padding:7px 18px;border:1px solid;cursor:pointer;
+  transition:all .18s;letter-spacing:.08em;margin-left:auto
+}
+.mbtn.go{background:transparent;border-color:var(--a);color:var(--a)}
+.mbtn.go:hover{background:var(--a2);box-shadow:0 0 14px rgba(255,170,0,.2)}
+.mbtn.stop{background:rgba(255,51,68,.08);border-color:var(--r);color:var(--r)}
+.mbtn.stop:hover{background:rgba(255,51,68,.15)}
+
+/* ─── CANVAS ─── */
+.cwrap{margin-bottom:12px}
+.clbl{font-size:10px;color:var(--d);letter-spacing:.14em;margin-bottom:5px}
+.cv{width:100%;max-width:100%;height:auto;display:block;border:1px solid rgba(0,229,255,.1)}
+
+/* ─── PEAKS BAR ─── */
+.pbar{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin-bottom:12px;min-height:26px}
+.plbl{font-size:9px;color:var(--d);letter-spacing:.15em;white-space:nowrap}
+.pitm{font-size:11px;padding:2px 8px;border:1px solid rgba(255,170,0,.22);color:var(--a)}
+
+/* ─── TUNER ─── */
+.tuner{display:flex;align-items:center;gap:10px;padding:6px 14px;
+  border:1px solid rgba(0,229,255,.22);background:rgba(0,229,255,.04);
+  margin-bottom:12px;flex-wrap:wrap}
+.tnote{font-family:'Orbitron',monospace;font-size:20px;font-weight:700;
+  color:var(--c);text-shadow:0 0 10px var(--c);min-width:52px}
+.tmeter-wrap{flex:1;min-width:120px;max-width:200px}
+.tmeter{height:7px;background:rgba(255,255,255,.07);position:relative}
+.tmeter-ctr{position:absolute;left:50%;top:-2px;width:1px;height:11px;background:rgba(255,255,255,.25)}
+.tmeter-needle{position:absolute;top:-2px;width:3px;height:11px;transform:translateX(-50%);transition:left .1s}
+.tmeter-labels{display:flex;justify-content:space-between;font-size:8px;color:var(--d);margin-top:2px}
+.tcents{font-family:'Orbitron',monospace;font-size:16px;font-weight:700;min-width:52px;text-align:right}
+
+/* ─── CHORD SELECTOR ─── */
+.cs{display:flex;gap:18px;margin-bottom:12px;flex-wrap:wrap;align-items:flex-start}
+.sg{display:flex;flex-direction:column;gap:6px}
+.sg label{font-size:9px;color:var(--d);letter-spacing:.2em}
+.nbrow{display:flex;gap:3px;flex-wrap:wrap}
+.nb,.tb{
+  background:transparent;border:1px solid var(--bc);color:var(--d);
+  font-family:'Share Tech Mono',monospace;font-size:12px;
+  padding:4px 7px;cursor:pointer;transition:all .14s;text-align:center
+}
+.nb:hover,.tb:hover{border-color:var(--a);color:var(--a)}
+.nb.on{border-color:var(--a);background:var(--a2);color:var(--a);
+  text-shadow:0 0 7px var(--a);box-shadow:0 0 8px rgba(255,170,0,.1)}
+.tb.on{border-color:var(--c);background:var(--c2);color:var(--c);text-shadow:0 0 7px var(--c)}
+
+/* ─── CHORD DISPLAY ─── */
+.cd{display:flex;align-items:center;gap:12px;padding:10px 14px;
+  border:1px solid var(--ba);background:var(--a2);margin-bottom:14px;flex-wrap:wrap}
+.cname{font-family:'Orbitron',monospace;font-size:22px;font-weight:700;
+  color:var(--a);text-shadow:0 0 16px var(--a)}
+.ctype-lbl{font-family:'Orbitron',monospace;font-size:13px;
+  color:rgba(255,255,255,.4);margin-right:4px}
+.ctones{display:flex;gap:5px;align-items:center}
+.ct{font-size:13px;color:var(--c);padding:2px 7px;border:1px solid var(--bc)}
+.pbtn{
+  background:transparent;border:1px solid var(--g);color:var(--g);
+  font-family:'Share Tech Mono',monospace;font-size:12px;
+  padding:7px 14px;cursor:pointer;transition:all .18s;letter-spacing:.07em;margin-left:auto
+}
+.pbtn:hover{background:rgba(0,255,136,.09);box-shadow:0 0 12px rgba(0,255,136,.18)}
+
+/* ─── VOICING SUMMARY ─── */
+.vs{display:grid;gap:6px;margin-bottom:14px}
+.vbox{border:1px solid;padding:8px 10px}
+.vtit{font-size:9px;letter-spacing:.14em;margin-bottom:4px}
+.vinsts{font-size:10px;color:var(--t);line-height:1.55}
+
+/* ─── MATRIX ─── */
+.mx{border:1px solid var(--bc);overflow:hidden;margin-bottom:14px;overflow-x:auto}
+.mxinner{min-width:720px}
+.mxhdr,.mxrow{display:grid;grid-template-columns:1.9fr .48fr .9fr .9fr .7fr 2.1fr}
+.mxhdr{background:rgba(0,229,255,.07);border-bottom:1px solid var(--bc)}
+.mxhdr>span{padding:7px 8px;font-size:9px;letter-spacing:.12em;color:var(--c);
+  border-right:1px solid var(--bc)}
+.mxhdr>span:last-child{border-right:none}
+.mxrow{border-bottom:1px solid rgba(0,229,255,.06);transition:background .14s}
+.mxrow:last-child{border-bottom:none}
+.mxrow:hover{background:rgba(0,229,255,.04)}
+.mxrow.ok{border-left:2px solid rgba(0,255,136,.4)}
+.mxrow.ng{border-left:2px solid rgba(255,51,68,.4);background:rgba(255,51,68,.025)}
+.mxrow>div{padding:7px 8px;border-right:1px solid rgba(0,229,255,.06);display:flex;align-items:center}
+.mxrow>div:last-child{border-right:none}
+.ikey{font-size:10px;font-weight:700;padding:1px 4px;border:1px solid}
+.ikey.bb{color:var(--c);border-color:rgba(0,229,255,.22)}
+.ikey.eb{color:var(--a);border-color:rgba(255,170,0,.22)}
+.nsel{
+  background:rgba(0,0,0,.5);border:1px solid var(--bc);color:var(--t);
+  font-family:'Share Tech Mono',monospace;font-size:13px;
+  padding:3px 5px;cursor:pointer;width:100%;outline:none
+}
+.nsel:focus{border-color:var(--c)}
+
+/* ─── JI REFERENCE ─── */
+.ji{margin-top:14px;border:1px solid var(--ba);background:rgba(255,170,0,.02);padding:13px}
+.jit{font-size:10px;color:var(--a);letter-spacing:.17em;margin-bottom:10px}
+.jig{display:grid;grid-template-columns:repeat(auto-fill,minmax(115px,1fr));gap:4px}
+.jii{display:flex;align-items:center;gap:6px;padding:5px 7px;
+  border:1px solid rgba(255,170,0,.09);background:rgba(0,0,0,.3)}
+.jsym{font-size:13px;color:var(--c);font-weight:700;min-width:19px;text-align:center}
+.jnm{font-size:9px;color:var(--d);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ─── FOOTER ─── */
+.ftr{text-align:center;padding:10px;font-size:9px;color:var(--d);
+  border-top:1px solid var(--bc);letter-spacing:.1em}
+
+@keyframes wblk{0%,100%{opacity:1}50%{opacity:.2}}
+.wblk{animation:wblk 1.6s step-end infinite}
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:rgba(0,0,0,.3)}
+::-webkit-scrollbar-thumb{background:rgba(0,229,255,.2)}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const{useState,useEffect,useRef,useCallback}=React;
+
+/* ══════════════════════ CONSTANTS ══════════════════════ */
+const CW=900,SH=228,EH=158;
+const MIN_F=50,MAX_F=4200,MIN_DB=-100,MAX_DB=-10;
+
+const ND=['C','D♭','D','E♭','E','F','F♯','G','A♭','A','B♭','B'];
+const NI=['C','Db','D','Eb','E','F','F#','G','Ab','A','Bb','B'];
+
+const CHORD_TYPES=[
+  {id:'Major',lbl:'MAJOR', iv:[0,4,7]},
+  {id:'Minor',lbl:'MINOR', iv:[0,3,7]},
+  {id:'Dom7', lbl:'DOM 7', iv:[0,4,7,10]},
+  {id:'Maj7', lbl:'MAJ 7', iv:[0,4,7,11]},
+  {id:'Min7', lbl:'MIN 7', iv:[0,3,7,10]},
+  {id:'Sus4', lbl:'SUS 4', iv:[0,5,7]},
+];
+
+const INST=[
+  /* Soprano Cornet: Eb管 — 書き譜より短3度高く鳴る (written C → concert Eb) */
+  {id:'sop', name:'Soprano Cornet',  key:'Eb',tr:+3},
+  {id:'sol', name:'Solo Cornet',     key:'Bb',tr:-2},
+  {id:'rep', name:'Repiano Cornet',  key:'Bb',tr:-2},
+  {id:'c2',  name:'2nd Cornet',      key:'Bb',tr:-2},
+  {id:'c3',  name:'3rd Cornet',      key:'Bb',tr:-2},
+  {id:'flg', name:'Flugelhorn',      key:'Bb',tr:-2},
+  {id:'sh',  name:'Solo Tenor Horn', key:'Eb',tr:-9},
+  {id:'h1',  name:'1st Tenor Horn',  key:'Eb',tr:-9},
+  {id:'h2',  name:'2nd Tenor Horn',  key:'Eb',tr:-9},
+  {id:'bar', name:'Baritone',        key:'Bb',tr:-2},
+  {id:'tr1', name:'1st Trombone',    key:'Bb',tr:-2},
+  {id:'tr2', name:'2nd Trombone',    key:'Bb',tr:-2},
+  {id:'btr', name:'Bass Trombone',   key:'Bb',tr:-2},
+  {id:'eu1', name:'1st Euphonium',   key:'Bb',tr:-2},
+  {id:'eu2', name:'2nd Euphonium',   key:'Bb',tr:-2},
+  {id:'eb1', name:'1st E♭ Bass',     key:'Eb',tr:-9},
+  {id:'eb2', name:'2nd E♭ Bass',     key:'Eb',tr:-9},
+  {id:'bb1', name:'1st B♭ Bass',     key:'Bb',tr:-2},
+  {id:'bb2', name:'2nd B♭ Bass',     key:'Bb',tr:-2},
+];
+
+/* Just-intonation cents adjustments from Equal Temperament */
+const JI={
+  0: {sym:'1',  nm:'Root',     c:0},
+  1: {sym:'♭2', nm:'min 2nd',  c:+12},
+  2: {sym:'2',  nm:'Maj 2nd',  c:+4},
+  3: {sym:'♭3', nm:'min 3rd',  c:+16},
+  4: {sym:'3',  nm:'Maj 3rd',  c:-14},
+  5: {sym:'4',  nm:'Perf 4th', c:-2},
+  6: {sym:'♭5', nm:'Tritone',  c:0},
+  7: {sym:'5',  nm:'Perf 5th', c:+2},
+  8: {sym:'♭6', nm:'min 6th',  c:+14},
+  9: {sym:'6',  nm:'Maj 6th',  c:-16},
+  10:{sym:'♭7', nm:'min 7th',  c:-31},
+  11:{sym:'7',  nm:'Maj 7th',  c:-12},
+};
+
+/* Default written octave per instrument for audio preview */
+const AOCT={sop:5,sol:5,rep:5,c2:5,c3:4,flg:4,sh:4,h1:4,h2:3,bar:4,tr1:3,tr2:3,btr:2,eu1:3,eu2:3,eb1:3,eb2:3,bb1:2,bb2:2};
+
+/* ══════════════════════ UTILS ══════════════════════ */
+const n2i=n=>({C:0,'C#':1,Db:1,D:2,'D#':3,Eb:3,E:4,F:5,'F#':6,Gb:6,G:7,'G#':8,Ab:8,A:9,'A#':10,Bb:10,B:11}[n]??-1);
+const i2n=i=>ND[((i%12)+12)%12];
+const midi2f=m=>440*Math.pow(2,(m-69)/12);
+const logX=(f,w)=>w*Math.log(f/MIN_F)/Math.log(MAX_F/MIN_F);
+const f2note=f=>{const m=Math.round(69+12*Math.log2(f/440));return ND[((m%12)+12)%12]+(Math.floor(m/12)-1);};
+const f2cents=f=>{
+  const m=69+12*Math.log2(f/440),nm=Math.round(m);
+  return{note:ND[((nm%12)+12)%12]+(Math.floor(nm/12)-1),cents:Math.round((m-nm)*100)};
+};
+const cColor=c=>c===0?'#00ff88':c>0?'#00e5ff':'#ffaa00';
+
+/* ══════════════════════ CANVAS HELPERS ══════════════════════ */
+function specGrid(ctx,W,H){
+  ctx.save();
+  [100,200,500,1000,2000,4000].forEach(f=>{
+    const x=logX(f,W);
+    ctx.strokeStyle='rgba(0,229,255,.09)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();
+    ctx.fillStyle='rgba(0,229,255,.3)';ctx.font='9px Share Tech Mono';
+    ctx.fillText(f>=1000?(f/1000)+'k':''+f,x+2,H-4);
+  });
+  [-20,-40,-60,-80].forEach(db=>{
+    const y=H*(1-(db-MIN_DB)/(MAX_DB-MIN_DB));
+    ctx.strokeStyle='rgba(255,170,0,.07)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();
+    ctx.fillStyle='rgba(255,170,0,.3)';ctx.font='9px Share Tech Mono';
+    ctx.fillText(db+'dB',3,y-2);
+  });
+  ctx.restore();
+}
+function envGrid(ctx,W,H){
+  ctx.save();
+  for(let i=0;i<=4;i++){
+    const y=H*(i/4);
+    ctx.strokeStyle='rgba(255,170,0,.06)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();
+  }
+  [0.25,0.5,0.75].forEach(t=>{
+    const x=W*t;
+    ctx.strokeStyle='rgba(0,229,255,.05)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();
+  });
+  ctx.restore();
+}
+
+/* ══════════════════════ SOUND ANALYZER ══════════════════════ */
+function SoundAnalyzer(){
+  const specR=useRef(null),envR=useRef(null);
+  const actxR=useRef(null),anR=useRef(null);
+  const rafR=useRef(null),strmR=useRef(null);
+  const hist=useRef(new Float32Array(CW).fill(0));
+  const lupd=useRef(0);
+  const[run,setRun]=useState(false);
+  const[st,setSt]=useState('READY');
+  const[pks,setPks]=useState([]);
+  const[tuner,setTuner]=useState(null);
+
+  const drawIdle=useCallback(()=>{
+    if(!specR.current||!envR.current)return;
+    const sc=specR.current,sctx=sc.getContext('2d');
+    sctx.fillStyle='#020508';sctx.fillRect(0,0,CW,SH);
+    specGrid(sctx,CW,SH);
+    sctx.fillStyle='rgba(0,229,255,.11)';
+    sctx.font='bold 13px Orbitron,monospace';
+    sctx.textAlign='center';
+    sctx.fillText('▶  PRESS  [ START MIC ]  TO BEGIN ANALYSIS',CW/2,SH/2+4);
+    sctx.textAlign='left';
+    const ec=envR.current,ectx=ec.getContext('2d');
+    ectx.fillStyle='#020508';ectx.fillRect(0,0,CW,EH);
+    envGrid(ectx,CW,EH);
+    ectx.strokeStyle='rgba(255,170,0,.12)';ectx.lineWidth=1;
+    ectx.setLineDash([5,4]);
+    ectx.beginPath();ectx.moveTo(0,EH/2);ectx.lineTo(CW,EH/2);ectx.stroke();
+    ectx.setLineDash([]);
+  },[]);
+
+  useEffect(()=>{drawIdle();},[drawIdle]);
+
+  const drawFrame=useCallback(()=>{
+    if(!anR.current||!actxR.current)return;
+    const an=anR.current;
+    const sr=actxR.current.sampleRate;
+    const hzBin=sr/an.fftSize;
+    const bufL=an.frequencyBinCount;
+    const fd=new Float32Array(bufL);
+    an.getFloatFrequencyData(fd);
+
+    /* ── SPECTRUM CANVAS ── */
+    if(specR.current){
+      const ctx=specR.current.getContext('2d');
+      ctx.fillStyle='#020508';ctx.fillRect(0,0,CW,SH);
+      specGrid(ctx,CW,SH);
+
+      const pts=[];
+      for(let x=0;x<CW;x++){
+        const f =MIN_F*Math.pow(MAX_F/MIN_F, x/CW);
+        const f1=MIN_F*Math.pow(MAX_F/MIN_F,(x+1)/CW);
+        const b0=Math.max(1,Math.floor(f/hzBin));
+        const b1=Math.min(Math.ceil(f1/hzBin),bufL-2);
+        let mdb=-Infinity;
+        for(let b=b0;b<=b1;b++)if(isFinite(fd[b])&&fd[b]>mdb)mdb=fd[b];
+        if(!isFinite(mdb)||mdb<MIN_DB)continue;
+        const norm=Math.max(0,Math.min(1,(mdb-MIN_DB)/(MAX_DB-MIN_DB)));
+        const bH=norm*SH;
+        const fr=x/CW;
+        /* Amber (low freq) → cyan (high freq) color mapping */
+        const R=Math.round((255*(1-fr)+18)*norm);
+        const G=Math.round(110*norm);
+        const B=Math.round((255*fr+18)*norm);
+        ctx.fillStyle=`rgb(${R},${G},${B})`;
+        ctx.fillRect(x,SH-bH,1,bH);
+        /* Soft glow aura on prominent bars */
+        if(norm>0.42){
+          ctx.fillStyle=`rgba(${R},${G},${B},.14)`;
+          ctx.fillRect(x-2,SH-bH-3,5,bH+3);
+        }
+        pts.push({x,f,db:mdb,n:norm});
+      }
+
+      /* Local peak detection */
+      const lp=[];
+      for(let i=6;i<pts.length-6;i++){
+        const{n,f}=pts[i];
+        if(n<0.3)continue;
+        if([1,2,3,4,5,6].every(d=>pts[i-d]&&pts[i+d]&&pts[i-d].n<n&&pts[i+d].n<n))
+          lp.push(pts[i]);
+      }
+      lp.sort((a,b)=>b.n-a.n);
+      const top=lp.slice(0,5);
+      top.forEach((p,i)=>{
+        const x=logX(p.f,CW);
+        ctx.strokeStyle='rgba(255,170,0,.45)';
+        ctx.setLineDash([2,5]);ctx.lineWidth=1;
+        ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,SH);ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle='rgba(255,170,0,.9)';ctx.font='bold 9px Share Tech Mono';
+        ctx.fillText(f2note(p.f),x+3,14+i*13);
+      });
+
+      /* Throttle React state updates to ~6fps */
+      const now=performance.now();
+      if(now-lupd.current>165){
+        lupd.current=now;
+        setPks(top.map(p=>({f:Math.round(p.f),note:f2note(p.f)})));
+        const fund=[...lp].sort((a,b)=>a.f-b.f).find(p=>p.f>80&&p.n>0.27);
+        if(fund){const r=f2cents(fund.f);setTuner({...r,f:Math.round(fund.f)});}
+        else setTuner(null);
+      }
+    }
+
+    /* ── ENVELOPE CANVAS ── */
+    if(envR.current){
+      const ctx=envR.current.getContext('2d');
+      const td=new Float32Array(an.fftSize);
+      an.getFloatTimeDomainData(td);
+      let sum=0;for(const v of td)sum+=v*v;
+      const rms=Math.sqrt(sum/td.length);
+
+      /* Shift history left, append new sample on right */
+      const h=hist.current;
+      for(let i=0;i<h.length-1;i++)h[i]=h[i+1];
+      h[h.length-1]=rms;
+
+      ctx.fillStyle='#020508';ctx.fillRect(0,0,CW,EH);
+      envGrid(ctx,CW,EH);
+
+      const SCALE=EH*1.85;
+      /* Filled area */
+      ctx.beginPath();ctx.moveTo(0,EH);
+      for(let i=0;i<h.length;i++)ctx.lineTo(i,EH-Math.min(h[i]*SCALE,EH));
+      ctx.lineTo(CW,EH);ctx.closePath();
+      const gr=ctx.createLinearGradient(0,0,0,EH);
+      gr.addColorStop(0,'rgba(255,170,0,.72)');
+      gr.addColorStop(.45,'rgba(255,170,0,.32)');
+      gr.addColorStop(1,'rgba(255,170,0,.02)');
+      ctx.fillStyle=gr;ctx.fill();
+
+      /* Top line with glow */
+      ctx.save();
+      ctx.beginPath();
+      for(let i=0;i<h.length;i++){
+        const y=EH-Math.min(h[i]*SCALE,EH);
+        if(i===0)ctx.moveTo(0,y);else ctx.lineTo(i,y);
+      }
+      ctx.strokeStyle='rgba(255,170,0,.9)';ctx.lineWidth=1.5;
+      ctx.shadowColor='#ffaa00';ctx.shadowBlur=7;
+      ctx.stroke();ctx.restore();
+
+      /* RMS readout */
+      const curRms=h[h.length-1];
+      const dbStr=curRms>1e-6?(20*Math.log10(curRms)).toFixed(1)+'dBFS':'-∞';
+      ctx.fillStyle='rgba(255,170,0,.45)';ctx.font='9px Share Tech Mono';
+      ctx.fillText('RMS '+dbStr,CW-120,EH-5);
+    }
+  },[]); // all refs, no state deps needed
+
+  const startLoop=useCallback(()=>{
+    const loop=()=>{drawFrame();rafR.current=requestAnimationFrame(loop);};
+    rafR.current=requestAnimationFrame(loop);
+  },[drawFrame]);
+
+  const startMic=useCallback(async()=>{
+    try{
+      setSt('REQUESTING...');
+      const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false},video:false});
+      strmR.current=stream;
+      const actx=new(window.AudioContext||window.webkitAudioContext)();
+      const an=actx.createAnalyser();
+      an.fftSize=4096;
+      an.smoothingTimeConstant=0.8;
+      actx.createMediaStreamSource(stream).connect(an);
+      actxR.current=actx;anR.current=an;
+      hist.current=new Float32Array(CW).fill(0);
+      setRun(true);setSt('LIVE');
+      startLoop();
+    }catch(e){setSt('ERR: '+(e.message||'denied'));}
+  },[startLoop]);
+
+  const stopMic=useCallback(()=>{
+    if(rafR.current)cancelAnimationFrame(rafR.current);
+    if(strmR.current){strmR.current.getTracks().forEach(t=>t.stop());strmR.current=null;}
+    if(actxR.current){actxR.current.close();actxR.current=null;}
+    anR.current=null;
+    setRun(false);setSt('STOPPED');setPks([]);setTuner(null);
+    setTimeout(drawIdle,60);
+  },[drawIdle]);
+
+  useEffect(()=>()=>{
+    if(rafR.current)cancelAnimationFrame(rafR.current);
+    if(strmR.current)strmR.current.getTracks().forEach(t=>t.stop());
+    if(actxR.current)actxR.current.close();
+  },[]);
+
+  const needleLeft=c=>Math.max(0,Math.min(100,50+c))+'%';
+  const tunerCol=c=>c===0?'var(--g)':Math.abs(c)<8?'var(--g)':Math.abs(c)<20?'#ffdd00':'var(--r)';
+
+  return(
+    <div className="panel">
+      <div className="ph">
+        <span className="pt">◈ SOUND-ANALYZER</span>
+        <span className={`badge${run?' live':''}`}>{st}</span>
+        <button className={`mbtn ${run?'stop':'go'}`} onClick={run?stopMic:startMic}>
+          {run?'⬛ STOP MIC':'⏺ START MIC'}
+        </button>
+      </div>
+
+      {/* Spectrum */}
+      <div className="cwrap">
+        <div className="clbl">▸ HARMONIC SPECTRUM ─ 50 Hz ─── 4.2 kHz ─ LOGARITHMIC SCALE</div>
+        <canvas ref={specR} width={CW} height={SH} className="cv"/>
+      </div>
+
+      {/* Peaks + Tuner row */}
+      {(pks.length>0||tuner)&&(
+        <div style={{display:'flex',gap:'10px',marginBottom:'12px',flexWrap:'wrap',alignItems:'stretch'}}>
+          {pks.length>0&&(
+            <div className="pbar" style={{flex:1}}>
+              <span className="plbl">PEAKS:</span>
+              {pks.map((p,i)=>(
+                <span key={i} className="pitm">{p.note} {p.f}Hz</span>
+              ))}
+            </div>
+          )}
+          {tuner&&(
+            <div className="tuner">
+              <span className="tnote">{tuner.note}</span>
+              <div className="tmeter-wrap">
+                <div className="tmeter">
+                  <div className="tmeter-ctr"/>
+                  <div className="tmeter-needle" style={{
+                    left:needleLeft(tuner.cents),
+                    background:tunerCol(tuner.cents),
+                    boxShadow:`0 0 6px ${tunerCol(tuner.cents)}`
+                  }}/>
+                </div>
+                <div className="tmeter-labels">
+                  <span>-50¢</span><span>0</span><span>+50¢</span>
+                </div>
+              </div>
+              <span className="tcents" style={{color:tunerCol(tuner.cents),textShadow:`0 0 8px ${tunerCol(tuner.cents)}`}}>
+                {tuner.cents>=0?'+':''}{tuner.cents}¢
+              </span>
+              <span style={{fontSize:'9px',color:'var(--d)'}}>{tuner.f}Hz</span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Envelope */}
+      <div className="cwrap">
+        <div className="clbl">▸ AMPLITUDE ENVELOPE ─ TIME HISTORY ─ NEWEST → RIGHT EDGE ─ ATTACK / DECAY VISIBLE</div>
+        <canvas ref={envR} width={CW} height={EH} className="cv"/>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════ TUNING MATRIX ══════════════════════ */
+function TuningMatrix(){
+  const[root,setRoot]=useState(0);
+  const[ctype,setCtype]=useState('Major');
+  const[notes,setNotes]=useState(()=>Object.fromEntries(INST.map(i=>[i.id,''])));
+  const actxR=useRef(null);
+
+  const ct=CHORD_TYPES.find(c=>c.id===ctype);
+  const chordTones=ct?ct.iv.map(i=>(root+i)%12):[];
+
+  const analyze=id=>{
+    const inst=INST.find(i=>i.id===id);
+    const wn=notes[id];if(!wn)return null;
+    const wi=n2i(wn);if(wi<0)return null;
+    const ci=((wi+inst.tr)%12+12)%12;
+    const interval=(ci-root+12)%12;
+    const inChord=chordTones.includes(ci);
+    const degIdx=ct?ct.iv.indexOf(interval):-1;
+    return{concertNote:i2n(ci),interval,ji:JI[interval],inChord,degIdx};
+  };
+
+  const getVoicing=()=>{
+    const g={root:[],third:[],fifth:[],sev:[],out:[]};
+    INST.forEach(inst=>{
+      const a=analyze(inst.id);if(!a)return;
+      if(!a.inChord){g.out.push(inst.name);return;}
+      const keys=['root','third','fifth','sev'];
+      const k=keys[a.degIdx];
+      if(k&&g[k])g[k].push(inst.name);else g.out.push(inst.name);
+    });
+    return g;
+  };
+
+  const playChord=()=>{
+    if(actxR.current)actxR.current.close();
+    const actx=new(window.AudioContext||window.webkitAudioContext)();
+    actxR.current=actx;
+    const master=actx.createGain();
+    master.gain.setValueAtTime(0.38,actx.currentTime);
+    master.connect(actx.destination);
+    let cnt=INST.filter(i=>notes[i.id]&&n2i(notes[i.id])>=0).length;
+    if(cnt===0)return;
+    INST.forEach(inst=>{
+      const wn=notes[inst.id];if(!wn)return;
+      const wi=n2i(wn);if(wi<0)return;
+      const ci=((wi+inst.tr)%12+12)%12;
+      const interval=(ci-root+12)%12;
+      const jiC=JI[interval].c;
+      const oct=AOCT[inst.id]||4;
+      const concertMidi=wi+(oct+1)*12+inst.tr;
+      const baseF=midi2f(concertMidi);
+      const jiF=baseF*Math.pow(2,jiC/1200);
+      const osc=actx.createOscillator(),g=actx.createGain();
+      osc.type='triangle';
+      osc.frequency.setValueAtTime(jiF,actx.currentTime);
+      g.gain.setValueAtTime(0,actx.currentTime);
+      g.gain.linearRampToValueAtTime(0.055/Math.sqrt(cnt),actx.currentTime+0.08);
+      g.gain.exponentialRampToValueAtTime(0.001,actx.currentTime+3.6);
+      osc.connect(g);g.connect(master);
+      osc.start();osc.stop(actx.currentTime+3.6);
+    });
+  };
+
+  const clearAll=()=>setNotes(Object.fromEntries(INST.map(i=>[i.id,''])));
+  const hasNotes=Object.values(notes).some(n=>n!=='');
+  const v=getVoicing();
+
+  const VBOXES=[
+    {k:'root', title:'ROOT', color:'var(--a)'},
+    {k:'third',title:'3rd',  color:'var(--c)'},
+    {k:'fifth',title:'5th',  color:'var(--g)'},
+    {k:'sev',  title:'7th',  color:'#c864ff'},
+    {k:'out',  title:'⚠ OUT OF CHORD',color:'var(--r)'},
+  ].filter(b=>v[b.k]?.length>0);
+
+  const centsDisplay=a=>{
+    if(!a||!a.inChord)return null;
+    const{c}=a.ji;
+    const col=cColor(c);
+    return(
+      <div style={{display:'flex',alignItems:'baseline',gap:'7px',flexWrap:'wrap'}}>
+        <span style={{fontFamily:'Orbitron,monospace',fontSize:'17px',fontWeight:'700',
+          color:col,textShadow:`0 0 8px ${col}`}}>
+          {c===0?'± 0¢':c>0?`▲ +${c}¢`:`▼ ${c}¢`}
+        </span>
+        <span style={{fontSize:'9px',color:'var(--d)',letterSpacing:'.1em'}}>
+          {c>0?'RAISE':c<0?'LOWER':'ET'}
+        </span>
+        <span style={{fontSize:'9px',color:'var(--d)'}}>{a.ji.nm}</span>
+      </div>
+    );
+  };
+
+  return(
+    <div className="panel">
+      <div className="ph">
+        <span className="pt">◈ TUNING-MATRIX</span>
+        <span style={{fontSize:'10px',color:'var(--d)',letterSpacing:'.08em'}}>
+          British Brass Band · Just Intonation Guide
+        </span>
+        {hasNotes&&(
+          <button onClick={clearAll} style={{
+            background:'transparent',border:'1px solid rgba(255,51,68,.3)',color:'var(--r)',
+            fontFamily:'Share Tech Mono',fontSize:'11px',padding:'3px 9px',cursor:'pointer',marginLeft:'auto'
+          }}>✕ CLEAR ALL</button>
+        )}
+        {!hasNotes&&<span style={{marginLeft:'auto'}}/>}
+      </div>
+
+      {/* Chord selector */}
+      <div className="cs">
+        <div className="sg">
+          <label>ROOT NOTE</label>
+          <div className="nbrow">
+            {ND.map((n,i)=>(
+              <button key={i} className={`nb${root===i?' on':''}`} onClick={()=>setRoot(i)}>{n}</button>
+            ))}
+          </div>
+        </div>
+        <div className="sg">
+          <label>CHORD TYPE</label>
+          <div className="nbrow">
+            {CHORD_TYPES.map(c=>(
+              <button key={c.id} className={`tb${ctype===c.id?' on':''}`} onClick={()=>setCtype(c.id)}>{c.lbl}</button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Active chord */}
+      <div className="cd">
+        <span className="cname">{ND[root]}</span>
+        <span className="ctype-lbl">{ctype}</span>
+        <div className="ctones">
+          {chordTones.map((t,i)=>(
+            <span key={i} className="ct" title={JI[ct.iv[i]].nm}>{i2n(t)}</span>
+          ))}
+        </div>
+        <button className="pbtn" onClick={playChord}>▶ PLAY (JI TUNING)</button>
+      </div>
+
+      {/* Voicing summary */}
+      {hasNotes&&VBOXES.length>0&&(
+        <div className="vs" style={{gridTemplateColumns:`repeat(${Math.min(VBOXES.length,5)},1fr)`}}>
+          {VBOXES.map(b=>(
+            <div key={b.k} className="vbox" style={{borderColor:b.color+'55',background:b.color+'0a'}}>
+              <div className="vtit" style={{color:b.color}}>{b.title} [{v[b.k].length}]</div>
+              <div className="vinsts">{v[b.k].join(', ')}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Instrument matrix */}
+      <div className="mx">
+        <div className="mxinner">
+          <div className="mxhdr">
+            <span>INSTRUMENT</span>
+            <span>KEY</span>
+            <span>WRITTEN</span>
+            <span>CONCERT</span>
+            <span>DEG.</span>
+            <span>JI ADJUSTMENT FROM EQUAL TEMPERAMENT</span>
+          </div>
+          {INST.map(inst=>{
+            const a=analyze(inst.id);
+            return(
+              <div key={inst.id} className={`mxrow${a?(a.inChord?' ok':' ng'):''}`}>
+                <div><span style={{fontSize:'12px',color:'var(--t)'}}>{inst.name}</span></div>
+                <div><span className={`ikey ${inst.key==='Eb'?'eb':'bb'}`}>{inst.key}</span></div>
+                <div>
+                  <select className="nsel"
+                    value={notes[inst.id]}
+                    onChange={e=>setNotes(p=>({...p,[inst.id]:e.target.value}))}>
+                    <option value="">──</option>
+                    {NI.map(n=><option key={n} value={n}>{n}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <span style={{fontSize:'14px',color:'var(--c)',fontWeight:'bold'}}>
+                    {a?a.concertNote:'──'}
+                  </span>
+                </div>
+                <div>
+                  {a?(a.inChord
+                    ?<span style={{fontSize:'16px',fontWeight:'700',color:'var(--g)',textShadow:'0 0 10px var(--g)'}}>{a.ji.sym}</span>
+                    :<span style={{fontSize:'10px',color:'var(--r)'}}>OUT</span>
+                  ):'──'}
+                </div>
+                <div>
+                  {a&&a.inChord?centsDisplay(a)
+                  :a&&!a.inChord
+                    ?<span className="wblk" style={{fontSize:'10px',color:'var(--r)'}}>⚠ OUT OF CHORD</span>
+                    :<span style={{color:'var(--d)'}}>──</span>}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* JI Reference table */}
+      <div className="ji">
+        <div className="jit">◈ JUST INTONATION REFERENCE ─ PITCH ADJUSTMENTS FROM EQUAL TEMPERAMENT</div>
+        <div className="jig">
+          {Object.entries(JI).map(([iv,info])=>{
+            const MAX_C=35,pct=Math.abs(info.c)/MAX_C;
+            const col=cColor(info.c);
+            return(
+              <div key={iv} className="jii">
+                <span className="jsym">{info.sym}</span>
+                <div style={{flex:1,minWidth:0}}>
+                  <div className="jnm">{info.nm}</div>
+                  <div style={{height:'3px',background:'rgba(255,255,255,.07)',position:'relative',marginTop:'3px'}}>
+                    <div style={{position:'absolute',left:'50%',top:'-1px',width:'1px',height:'5px',background:'rgba(255,255,255,.2)'}}/>
+                    {info.c!==0&&<div style={{
+                      position:'absolute',top:0,height:'100%',
+                      width:`${pct*50}%`,background:col,
+                      [info.c>0?'left':'right']:'50%'
+                    }}/>}
+                  </div>
+                </div>
+                <span style={{fontFamily:'Orbitron,monospace',fontSize:'12px',fontWeight:'700',
+                  color:col,minWidth:'38px',textAlign:'right'}}>
+                  {info.c===0?'±0':info.c>0?`+${info.c}`:info.c}¢
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════ APP ══════════════════════ */
+function App(){
+  const[tab,setTab]=useState('analyzer');
+  return(
+    <div className="app">
+      <header className="hdr">
+        <div>
+          <div className="logo">
+            <span className="la">SOUND</span>
+            <span className="ld">◈</span>
+            <span className="lt">TUNING</span>
+          </div>
+          <div className="hsub">ANALYZER · MATRIX · BRASS BAND EDITION</div>
+        </div>
+        <nav className="tabs">
+          <button className={`tab${tab==='analyzer'?' on':''}`} onClick={()=>setTab('analyzer')}>
+            ◉ SOUND-ANALYZER
+          </button>
+          <button className={`tab${tab==='tuning'?' on':''}`} onClick={()=>setTab('tuning')}>
+            ◈ TUNING-MATRIX
+          </button>
+        </nav>
+      </header>
+      <main className="main">
+        {tab==='analyzer'?<SoundAnalyzer/>:<TuningMatrix/>}
+      </main>
+      <footer className="ftr">
+        SOUND-ANALYZER + TUNING-MATRIX · British Brass Band Edition · Web Audio API · Just Intonation Tuning Guide
+      </footer>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>

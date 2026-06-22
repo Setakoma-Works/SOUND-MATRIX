@@ -308,8 +308,53 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
 })();
 
 </script>
-<style>
-.logo,.pt,.cname,.tnote,.tcents{font-family:'Courier New','Lucida Console',monospace !important;}
+<style>.logo,.pt,.cname,.tnote,.tcents{font-family:"Courier New","Lucida Console",monospace!important}
+/* ═══ Android / Mobile 互換修正 ═══ */
+
+/* inset:0 の代替（Chrome<87対応）*/
+body::after {
+  content:'';
+  position:fixed;
+  top:0; left:0; right:0; bottom:0;
+  background:repeating-linear-gradient(
+    0deg,transparent,transparent 2px,rgba(0,0,0,.035) 2px,rgba(0,0,0,.035) 4px
+  );
+  pointer-events:none;
+  z-index:9999;
+}
+
+/* モバイル向けcanvasスケール */
+.cv { width:100%; max-width:100%; height:auto; display:block;
+      border:1px solid rgba(0,229,255,.1); }
+
+/* sticky fallback */
+.hdr { position:-webkit-sticky; position:sticky; top:0; z-index:100; }
+
+/* gap をサポートしないブラウザへのflex fallback */
+.ph  > * { margin-right:12px; }
+.ph  > *:last-child { margin-right:0; }
+.tabs > * { margin-left:3px; }
+
+/* tuner */
+.tuner{display:-webkit-box;display:flex;-webkit-box-align:center;align-items:center;
+  gap:10px;padding:6px 14px;border:1px solid rgba(0,229,255,.22);
+  background:rgba(0,229,255,.04);flex-wrap:wrap;margin-bottom:12px}
+.tnote{font-family:'Courier New','Lucida Console',monospace;font-size:20px;font-weight:700;
+  color:var(--c);text-shadow:0 0 10px var(--c);min-width:52px}
+.tmeter-wrap{-webkit-box-flex:1;flex:1;min-width:120px;max-width:200px}
+.tmeter{height:7px;background:rgba(255,255,255,.07);position:relative}
+.tmeter-ctr{position:absolute;left:50%;top:-2px;width:1px;height:11px;background:rgba(255,255,255,.25)}
+.tmeter-needle{position:absolute;top:-2px;width:3px;height:11px;
+  -webkit-transform:translateX(-50%);transform:translateX(-50%);-webkit-transition:left .1s;transition:left .1s}
+.tmeter-labels{display:-webkit-box;display:flex;-webkit-box-pack:justify;justify-content:space-between;
+  font-size:8px;color:var(--d);margin-top:2px}
+.tcents{font-family:'Courier New','Lucida Console',monospace;font-size:16px;font-weight:700;
+  min-width:52px;text-align:right}
+
+/* モバイルでのoverflow対策 */
+.mx { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+.mxinner { min-width:680px; }
+
 </style>
 <style>
 :root{
@@ -323,11 +368,7 @@ function(a,b,c){if(!Vd(b))throw Error(m(200));return Wd(null,a,b,!1,c)};Q.unmoun
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{background:var(--bg);color:var(--t);font-family:'Share Tech Mono',monospace;font-size:13px;min-height:100vh}
-body::after{
-  content:'';position:fixed;inset:0;
-  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.035) 2px,rgba(0,0,0,.035) 4px);
-  pointer-events:none;z-index:9999
-}
+/* body::after moved to mobile-compat block below */
 select option{background:#0a1520;color:var(--t)}
 
 /* ─── APP SHELL ─── */
@@ -484,63 +525,30 @@ select option{background:#0a1520;color:var(--t)}
 ::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-track{background:rgba(0,0,0,.3)}
 ::-webkit-scrollbar-thumb{background:rgba(0,229,255,.2)}
-
-/* ─── EXTRA CSS v2 ─── */
-/* Spectrogram label */
-.spectroh-lbl { font-size:10px; color:var(--d); letter-spacing:.14em; margin-bottom:5px; }
-
-/* Tuner (already present but ensure) */
-.tuner{display:flex;align-items:center;gap:10px;padding:6px 14px;
-  border:1px solid rgba(0,229,255,.22);background:rgba(0,229,255,.04);flex-wrap:wrap}
-.tnote{font-family:'Courier New',monospace;font-size:20px;font-weight:700;
-  color:var(--c);text-shadow:0 0 10px var(--c);min-width:52px}
-.tmeter-wrap{flex:1;min-width:120px;max-width:200px}
-.tmeter{height:7px;background:rgba(255,255,255,.07);position:relative}
-.tmeter-ctr{position:absolute;left:50%;top:-2px;width:1px;height:11px;background:rgba(255,255,255,.25)}
-.tmeter-needle{position:absolute;top:-2px;width:3px;height:11px;transform:translateX(-50%);transition:left .1s}
-.tmeter-labels{display:flex;justify-content:space-between;font-size:8px;color:var(--d);margin-top:2px}
-.tcents{font-family:'Courier New',monospace;font-size:16px;font-weight:700;min-width:52px;text-align:right}
-
 </style>
 </head>
 <body>
-<div id="root"></div>
+<div id="root"><div style="background:#020507;color:#00e5ff;display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:monospace;font-size:14px;flex-direction:column;gap:12px"><div>⟳ LOADING...</div><div style="font-size:10px;color:#384c56">JavaScript を有効にしてください</div></div></div>
 <script>
-function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
-function _regenerator() { /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */ var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i.return) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
-function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); } r ? i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n : (o("next", 0), o("throw", 1), o("return", 2)); }, _regeneratorDefine2(e, r, n, t); }
-function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
-function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
-function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t.return || t.return(); } finally { if (u) throw o; } } }; }
-function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
-function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
-function _defineProperty(e, r, t) { return (r = _toPropertyKey(r)) in e ? Object.defineProperty(e, r, { value: t, enumerable: !0, configurable: !0, writable: !0 }) : e[r] = t, e; }
-function _toPropertyKey(t) { var i = _toPrimitive(t, "string"); return "symbol" == _typeof(i) ? i : i + ""; }
-function _toPrimitive(t, r) { if ("object" != _typeof(t) || !t) return t; var e = t[Symbol.toPrimitive]; if (void 0 !== e) { var i = e.call(t, r || "default"); if ("object" != _typeof(i)) return i; throw new TypeError("@@toPrimitive must return a primitive value."); } return ("string" === r ? String : Number)(t); }
-function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
-function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
-function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t.return && (u = t.return(), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
-function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
-var _React = React,
-  useState = _React.useState,
-  useEffect = _React.useEffect,
-  useRef = _React.useRef,
-  useCallback = _React.useCallback;
+const {
+  useState,
+  useEffect,
+  useRef,
+  useCallback
+} = React;
 
 /* ══════════════ CONSTANTS ══════════════ */
-var CW = 900,
+const CW = 900,
   SH = 222,
   EH = 150,
   SPECTROH = 210;
-var MIN_F = 50,
+const MIN_F = 50,
   MAX_F = 4200,
   MIN_DB = -100,
   MAX_DB = -10;
-var ND = ['C', 'D♭', 'D', 'E♭', 'E', 'F', 'F♯', 'G', 'A♭', 'A', 'B♭', 'B'];
-var NI = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
-var CHORD_TYPES = [{
+const ND = ['C', 'D♭', 'D', 'E♭', 'E', 'F', 'F♯', 'G', 'A♭', 'A', 'B♭', 'B'];
+const NI = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
+const CHORD_TYPES = [{
   id: 'Major',
   lbl: 'MAJOR',
   iv: [0, 4, 7]
@@ -565,7 +573,7 @@ var CHORD_TYPES = [{
   lbl: 'SUS 4',
   iv: [0, 5, 7]
 }];
-var INST = [{
+const INST = [{
   id: 'sop',
   name: 'Soprano Cornet',
   key: 'Eb',
@@ -661,7 +669,7 @@ var INST = [{
   key: 'Bb',
   tr: -2
 }];
-var JI = {
+const JI = {
   0: {
     sym: '1',
     nm: 'Root',
@@ -723,7 +731,7 @@ var JI = {
     c: -12
   }
 };
-var AOCT = {
+const AOCT = {
   sop: 5,
   sol: 5,
   rep: 5,
@@ -750,7 +758,7 @@ var AOCT = {
    brightness = (H3+H4+H5) / (H1+H2)   — higher = brighter/harsher
    warmth     = H2/H1                   — 2nd harmonic richness
 */
-var TONE_PROFILES = {
+const TONE_PROFILES = {
   'Soprano Cornet': {
     fundRange: [280, 1000],
     description: 'Bright, focused and cutting — the crown of the brass band',
@@ -1006,7 +1014,7 @@ var TONE_PROFILES = {
 };
 
 /* ══════════════ UTILS ══════════════ */
-var n2i = function n2i(n) {
+const n2i = n => {
   var _C$C$Db$D$D$Eb$E$F$;
   return (_C$C$Db$D$D$Eb$E$F$ = {
     C: 0,
@@ -1028,39 +1036,29 @@ var n2i = function n2i(n) {
     B: 11
   }[n]) !== null && _C$C$Db$D$D$Eb$E$F$ !== void 0 ? _C$C$Db$D$D$Eb$E$F$ : -1;
 };
-var i2n = function i2n(i) {
-  return ND[(i % 12 + 12) % 12];
-};
-var midi2f = function midi2f(m) {
-  return 440 * Math.pow(2, (m - 69) / 12);
-};
-var logX = function logX(f, w) {
-  return w * Math.log(f / MIN_F) / Math.log(MAX_F / MIN_F);
-};
-var f2note = function f2note(f) {
-  var m = Math.round(69 + 12 * Math.log2(f / 440));
+const i2n = i => ND[(i % 12 + 12) % 12];
+const midi2f = m => 440 * Math.pow(2, (m - 69) / 12);
+const logX = (f, w) => w * Math.log(f / MIN_F) / Math.log(MAX_F / MIN_F);
+const f2note = f => {
+  const m = Math.round(69 + 12 * Math.log2(f / 440));
   return ND[(m % 12 + 12) % 12] + (Math.floor(m / 12) - 1);
 };
-var f2cents = function f2cents(f) {
-  var m = 69 + 12 * Math.log2(f / 440),
+const f2cents = f => {
+  const m = 69 + 12 * Math.log2(f / 440),
     nm = Math.round(m);
   return {
     note: ND[(nm % 12 + 12) % 12] + (Math.floor(nm / 12) - 1),
     cents: Math.round((m - nm) * 100)
   };
 };
-var cColor = function cColor(c) {
-  return c === 0 ? '#00ff88' : c > 0 ? '#00e5ff' : '#ffaa00';
-};
-var fmtSecs = function fmtSecs(s) {
-  return "".concat(String(Math.floor(s / 60)).padStart(2, '0'), ":").concat(String(s % 60).padStart(2, '0'));
-};
+const cColor = c => c === 0 ? '#00ff88' : c > 0 ? '#00e5ff' : '#ffaa00';
+const fmtSecs = s => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 
 /* ══════════════ CANVAS HELPERS ══════════════ */
 function specGrid(ctx, W, H) {
   ctx.save();
-  [100, 200, 500, 1000, 2000, 4000].forEach(function (f) {
-    var x = logX(f, W);
+  [100, 200, 500, 1000, 2000, 4000].forEach(f => {
+    const x = logX(f, W);
     ctx.strokeStyle = 'rgba(0,229,255,.09)';
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -1071,8 +1069,8 @@ function specGrid(ctx, W, H) {
     ctx.font = '9px monospace';
     ctx.fillText(f >= 1000 ? f / 1000 + 'k' : '' + f, x + 2, H - 4);
   });
-  [-20, -40, -60, -80].forEach(function (db) {
-    var y = H * (1 - (db - MIN_DB) / (MAX_DB - MIN_DB));
+  [-20, -40, -60, -80].forEach(db => {
+    const y = H * (1 - (db - MIN_DB) / (MAX_DB - MIN_DB));
     ctx.strokeStyle = 'rgba(255,170,0,.07)';
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -1087,7 +1085,7 @@ function specGrid(ctx, W, H) {
 }
 function envGrid(ctx, W, H) {
   ctx.save();
-  for (var i = 0; i <= 4; i++) {
+  for (let i = 0; i <= 4; i++) {
     ctx.strokeStyle = 'rgba(255,170,0,.06)';
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -1099,8 +1097,8 @@ function envGrid(ctx, W, H) {
 }
 function spectroFreqGrid(ctx, W, H) {
   ctx.save();
-  [100, 200, 500, 1000, 2000, 4000].forEach(function (f) {
-    var x = logX(f, W);
+  [100, 200, 500, 1000, 2000, 4000].forEach(f => {
+    const x = logX(f, W);
     ctx.strokeStyle = 'rgba(255,255,255,.12)';
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -1115,72 +1113,51 @@ function spectroFreqGrid(ctx, W, H) {
 }
 
 /* ══════════════ SOUND ANALYZER ══════════════ */
-function SoundAnalyzer(_ref) {
-  var analyserRef = _ref.analyserRef,
-    audioCtxRef = _ref.audioCtxRef,
-    streamRef = _ref.streamRef,
-    micRunning = _ref.micRunning,
-    micStatus = _ref.micStatus,
-    startMic = _ref.startMic,
-    stopMic = _ref.stopMic;
-  var specR = useRef(null),
+function SoundAnalyzer({
+  analyserRef,
+  audioCtxRef,
+  streamRef,
+  micRunning,
+  micStatus,
+  startMic,
+  stopMic
+}) {
+  const specR = useRef(null),
     envR = useRef(null),
     spectroR = useRef(null);
-  var rafR = useRef(null);
-  var envHist = useRef(new Float32Array(CW).fill(0));
-  var spectroImg = useRef(null);
-  var lupd = useRef(0);
-  var mrRef = useRef(null);
-  var recChunks = useRef([]);
-  var recStartRef = useRef(0);
-  var frozenRef = useRef(false);
-  var viewRef = useRef('spectrum');
-  var _useState = useState('spectrum'),
-    _useState2 = _slicedToArray(_useState, 2),
-    viewMode = _useState2[0],
-    setViewMode = _useState2[1];
-  var _useState3 = useState(false),
-    _useState4 = _slicedToArray(_useState3, 2),
-    frozen = _useState4[0],
-    setFrozen = _useState4[1];
-  var _useState5 = useState(false),
-    _useState6 = _slicedToArray(_useState5, 2),
-    isRec = _useState6[0],
-    setIsRec = _useState6[1];
-  var _useState7 = useState(0),
-    _useState8 = _slicedToArray(_useState7, 2),
-    recSecs = _useState8[0],
-    setRecSecs = _useState8[1];
-  var _useState9 = useState([]),
-    _useState0 = _slicedToArray(_useState9, 2),
-    pks = _useState0[0],
-    setPks = _useState0[1];
-  var _useState1 = useState(null),
-    _useState10 = _slicedToArray(_useState1, 2),
-    tuner = _useState10[0],
-    setTuner = _useState10[1];
-  useEffect(function () {
+  const rafR = useRef(null);
+  const envHist = useRef(new Float32Array(CW).fill(0));
+  const spectroImg = useRef(null);
+  const lupd = useRef(0);
+  const mrRef = useRef(null);
+  const recChunks = useRef([]);
+  const recStartRef = useRef(0);
+  const frozenRef = useRef(false);
+  const viewRef = useRef('spectrum');
+  const [viewMode, setViewMode] = useState('spectrum');
+  const [frozen, setFrozen] = useState(false);
+  const [isRec, setIsRec] = useState(false);
+  const [recSecs, setRecSecs] = useState(0);
+  const [pks, setPks] = useState([]);
+  const [tuner, setTuner] = useState(null);
+  useEffect(() => {
     frozenRef.current = frozen;
   }, [frozen]);
-  useEffect(function () {
+  useEffect(() => {
     viewRef.current = viewMode;
   }, [viewMode]);
 
   /* Recording timer */
-  useEffect(function () {
+  useEffect(() => {
     if (!isRec) return;
-    var t = setInterval(function () {
-      return setRecSecs(Math.floor((Date.now() - recStartRef.current) / 1000));
-    }, 500);
-    return function () {
-      return clearInterval(t);
-    };
+    const t = setInterval(() => setRecSecs(Math.floor((Date.now() - recStartRef.current) / 1000)), 500);
+    return () => clearInterval(t);
   }, [isRec]);
-  var drawIdleAll = useCallback(function () {
-    [specR, envR].forEach(function (r, ri) {
+  const drawIdleAll = useCallback(() => {
+    [specR, envR].forEach((r, ri) => {
       if (!r.current) return;
-      var ctx = r.current.getContext('2d');
-      var H = ri === 0 ? SH : EH;
+      const ctx = r.current.getContext('2d');
+      const H = ri === 0 ? SH : EH;
       ctx.fillStyle = '#020508';
       ctx.fillRect(0, 0, CW, H);
       if (ri === 0) {
@@ -1203,7 +1180,7 @@ function SoundAnalyzer(_ref) {
       }
     });
     if (spectroR.current) {
-      var ctx = spectroR.current.getContext('2d');
+      const ctx = spectroR.current.getContext('2d');
       ctx.fillStyle = '#020508';
       ctx.fillRect(0, 0, CW, SPECTROH);
       ctx.fillStyle = 'rgba(0,229,255,.08)';
@@ -1213,66 +1190,59 @@ function SoundAnalyzer(_ref) {
       ctx.textAlign = 'left';
     }
   }, []);
-  useEffect(function () {
+  useEffect(() => {
     drawIdleAll();
   }, [drawIdleAll]);
-  var drawFrame = useCallback(function () {
+  const drawFrame = useCallback(() => {
     if (!analyserRef.current || !audioCtxRef.current || frozenRef.current) return;
-    var an = analyserRef.current;
-    var sr = audioCtxRef.current.sampleRate;
-    var hzBin = sr / an.fftSize,
+    const an = analyserRef.current;
+    const sr = audioCtxRef.current.sampleRate;
+    const hzBin = sr / an.fftSize,
       bufL = an.frequencyBinCount;
-    var fd = new Float32Array(bufL);
+    const fd = new Float32Array(bufL);
     an.getFloatFrequencyData(fd);
 
     /* ─ SPECTRUM ─ */
     if (viewRef.current === 'spectrum' && specR.current) {
-      var ctx = specR.current.getContext('2d');
+      const ctx = specR.current.getContext('2d');
       ctx.fillStyle = '#020508';
       ctx.fillRect(0, 0, CW, SH);
       specGrid(ctx, CW, SH);
-      var pts = [];
-      for (var x = 0; x < CW; x++) {
-        var f = MIN_F * Math.pow(MAX_F / MIN_F, x / CW);
-        var f1 = MIN_F * Math.pow(MAX_F / MIN_F, (x + 1) / CW);
-        var b0 = Math.max(1, Math.floor(f / hzBin));
-        var b1 = Math.min(Math.ceil(f1 / hzBin), bufL - 2);
-        var mdb = -Infinity;
-        for (var b = b0; b <= b1; b++) if (isFinite(fd[b]) && fd[b] > mdb) mdb = fd[b];
+      const pts = [];
+      for (let x = 0; x < CW; x++) {
+        const f = MIN_F * Math.pow(MAX_F / MIN_F, x / CW);
+        const f1 = MIN_F * Math.pow(MAX_F / MIN_F, (x + 1) / CW);
+        const b0 = Math.max(1, Math.floor(f / hzBin));
+        const b1 = Math.min(Math.ceil(f1 / hzBin), bufL - 2);
+        let mdb = -Infinity;
+        for (let b = b0; b <= b1; b++) if (isFinite(fd[b]) && fd[b] > mdb) mdb = fd[b];
         if (!isFinite(mdb) || mdb < MIN_DB) continue;
-        var norm = Math.max(0, Math.min(1, (mdb - MIN_DB) / (MAX_DB - MIN_DB)));
-        var bH = norm * SH,
+        const norm = Math.max(0, Math.min(1, (mdb - MIN_DB) / (MAX_DB - MIN_DB)));
+        const bH = norm * SH,
           fr = x / CW;
-        var R = Math.round((255 * (1 - fr) + 18) * norm),
+        const R = Math.round((255 * (1 - fr) + 18) * norm),
           G = Math.round(110 * norm),
           B = Math.round((255 * fr + 18) * norm);
-        ctx.fillStyle = "rgb(".concat(R, ",").concat(G, ",").concat(B, ")");
+        ctx.fillStyle = `rgb(${R},${G},${B})`;
         ctx.fillRect(x, SH - bH, 1, bH);
         if (norm > 0.42) {
-          ctx.fillStyle = "rgba(".concat(R, ",").concat(G, ",").concat(B, ",.13)");
+          ctx.fillStyle = `rgba(${R},${G},${B},.13)`;
           ctx.fillRect(x - 2, SH - bH - 3, 5, bH + 3);
         }
         pts.push({
-          x: x,
-          f: f,
+          x,
+          f,
           n: norm
         });
       }
-      var lp = [];
-      var _loop = function _loop(i) {
-        if (pts[i].n < 0.3) return 1; // continue
-        if ([1, 2, 3, 4, 5, 6].every(function (d) {
-          return pts[i - d] && pts[i + d] && pts[i - d].n < pts[i].n && pts[i + d].n < pts[i].n;
-        })) lp.push(pts[i]);
-      };
-      for (var i = 6; i < pts.length - 6; i++) {
-        if (_loop(i)) continue;
+      const lp = [];
+      for (let i = 6; i < pts.length - 6; i++) {
+        if (pts[i].n < 0.3) continue;
+        if ([1, 2, 3, 4, 5, 6].every(d => pts[i - d] && pts[i + d] && pts[i - d].n < pts[i].n && pts[i + d].n < pts[i].n)) lp.push(pts[i]);
       }
-      lp.sort(function (a, b) {
-        return b.n - a.n;
-      });
-      lp.slice(0, 5).forEach(function (p, i) {
-        var x = logX(p.f, CW);
+      lp.sort((a, b) => b.n - a.n);
+      lp.slice(0, 5).forEach((p, i) => {
+        const x = logX(p.f, CW);
         ctx.strokeStyle = 'rgba(255,170,0,.44)';
         ctx.setLineDash([2, 5]);
         ctx.lineWidth = 1;
@@ -1285,117 +1255,104 @@ function SoundAnalyzer(_ref) {
         ctx.font = 'bold 9px monospace';
         ctx.fillText(f2note(p.f), x + 3, 14 + i * 13);
       });
-      var now = performance.now();
+      const now = performance.now();
       if (now - lupd.current > 165) {
         lupd.current = now;
-        setPks(lp.slice(0, 5).map(function (p) {
-          return {
-            f: Math.round(p.f),
-            note: f2note(p.f)
-          };
-        }));
-        var fund = [].concat(lp).sort(function (a, b) {
-          return a.f - b.f;
-        }).find(function (p) {
-          return p.f > 80 && p.n > 0.27;
-        });
+        setPks(lp.slice(0, 5).map(p => ({
+          f: Math.round(p.f),
+          note: f2note(p.f)
+        })));
+        const fund = [...lp].sort((a, b) => a.f - b.f).find(p => p.f > 80 && p.n > 0.27);
         if (fund) {
-          var r = f2cents(fund.f);
-          setTuner(_objectSpread(_objectSpread({}, r), {}, {
+          const r = f2cents(fund.f);
+          setTuner({
+            ...r,
             f: Math.round(fund.f)
-          }));
+          });
         } else setTuner(null);
       }
     }
 
     /* ─ SPECTROGRAM ─ */
     if (viewRef.current === 'spectro' && spectroR.current) {
-      var _ctx = spectroR.current.getContext('2d');
+      const ctx = spectroR.current.getContext('2d');
       if (!spectroImg.current) {
-        spectroImg.current = _ctx.createImageData(CW, SPECTROH);
+        spectroImg.current = ctx.createImageData(CW, SPECTROH);
         spectroImg.current.data.fill(5);
       }
-      var d = spectroImg.current.data;
-      d.copyWithin(0, CW * 4, CW * SPECTROH * 4);
-      for (var _x = 0; _x < CW; _x++) {
-        var _f = MIN_F * Math.pow(MAX_F / MIN_F, _x / CW);
-        var bin = Math.min(Math.round(_f / hzBin), bufL - 1);
-        var db = isFinite(fd[bin]) ? fd[bin] : MIN_DB;
-        var v = Math.max(0, Math.min(255, (db - MIN_DB) / (MAX_DB - MIN_DB) * 255));
-        var _fr = _x / CW,
-          idx = ((SPECTROH - 1) * CW + _x) * 4;
-        d[idx] = Math.round((240 * (1 - _fr) + 8) * (v / 255));
+      const d = spectroImg.current.data;
+      // safe pixel shift (replaces copyWithin for Android compat)
+      var pixLen = CW * SPECTROH * 4;
+      var rowLen = CW * 4;
+      for(var pi = 0; pi < pixLen - rowLen; pi++) d[pi] = d[pi + rowLen];
+      for (let x = 0; x < CW; x++) {
+        const f = MIN_F * Math.pow(MAX_F / MIN_F, x / CW);
+        const bin = Math.min(Math.round(f / hzBin), bufL - 1);
+        const db = isFinite(fd[bin]) ? fd[bin] : MIN_DB;
+        const v = Math.max(0, Math.min(255, (db - MIN_DB) / (MAX_DB - MIN_DB) * 255));
+        const fr = x / CW,
+          idx = ((SPECTROH - 1) * CW + x) * 4;
+        d[idx] = Math.round((240 * (1 - fr) + 8) * (v / 255));
         d[idx + 1] = Math.round(80 * (v / 255));
-        d[idx + 2] = Math.round((240 * _fr + 8) * (v / 255));
+        d[idx + 2] = Math.round((240 * fr + 8) * (v / 255));
         d[idx + 3] = 255;
       }
-      _ctx.putImageData(spectroImg.current, 0, 0);
-      spectroFreqGrid(_ctx, CW, SPECTROH);
+      ctx.putImageData(spectroImg.current, 0, 0);
+      spectroFreqGrid(ctx, CW, SPECTROH);
     }
 
     /* ─ ENVELOPE ─ */
     if (envR.current) {
-      var _ctx2 = envR.current.getContext('2d');
-      var td = new Float32Array(an.fftSize);
+      const ctx = envR.current.getContext('2d');
+      const td = new Float32Array(an.fftSize);
       an.getFloatTimeDomainData(td);
-      var sum = 0;
-      var _iterator = _createForOfIteratorHelper(td),
-        _step;
-      try {
-        for (_iterator.s(); !(_step = _iterator.n()).done;) {
-          var _v = _step.value;
-          sum += _v * _v;
-        }
-      } catch (err) {
-        _iterator.e(err);
-      } finally {
-        _iterator.f();
-      }
-      var rms = Math.sqrt(sum / td.length);
-      var h = envHist.current;
-      for (var _i = 0; _i < h.length - 1; _i++) h[_i] = h[_i + 1];
+      let sum = 0;
+      for(var vi=0;vi<td.length;vi++){var v=td[vi];sum+=v*v;}
+      const rms = Math.sqrt(sum / td.length);
+      const h = envHist.current;
+      for (let i = 0; i < h.length - 1; i++) h[i] = h[i + 1];
       h[h.length - 1] = rms;
-      _ctx2.fillStyle = '#020508';
-      _ctx2.fillRect(0, 0, CW, EH);
-      envGrid(_ctx2, CW, EH);
-      var SC = EH * 1.85;
-      _ctx2.beginPath();
-      _ctx2.moveTo(0, EH);
-      for (var _i2 = 0; _i2 < h.length; _i2++) _ctx2.lineTo(_i2, EH - Math.min(h[_i2] * SC, EH));
-      _ctx2.lineTo(CW, EH);
-      _ctx2.closePath();
-      var gr = _ctx2.createLinearGradient(0, 0, 0, EH);
+      ctx.fillStyle = '#020508';
+      ctx.fillRect(0, 0, CW, EH);
+      envGrid(ctx, CW, EH);
+      const SC = EH * 1.85;
+      ctx.beginPath();
+      ctx.moveTo(0, EH);
+      for (let i = 0; i < h.length; i++) ctx.lineTo(i, EH - Math.min(h[i] * SC, EH));
+      ctx.lineTo(CW, EH);
+      ctx.closePath();
+      const gr = ctx.createLinearGradient(0, 0, 0, EH);
       gr.addColorStop(0, 'rgba(255,170,0,.72)');
       gr.addColorStop(.45, 'rgba(255,170,0,.30)');
       gr.addColorStop(1, 'rgba(255,170,0,.02)');
-      _ctx2.fillStyle = gr;
-      _ctx2.fill();
-      _ctx2.save();
-      _ctx2.beginPath();
-      for (var _i3 = 0; _i3 < h.length; _i3++) {
-        var y = EH - Math.min(h[_i3] * SC, EH);
-        if (_i3 === 0) _ctx2.moveTo(0, y);else _ctx2.lineTo(_i3, y);
+      ctx.fillStyle = gr;
+      ctx.fill();
+      ctx.save();
+      ctx.beginPath();
+      for (let i = 0; i < h.length; i++) {
+        const y = EH - Math.min(h[i] * SC, EH);
+        if (i === 0) ctx.moveTo(0, y);else ctx.lineTo(i, y);
       }
-      _ctx2.strokeStyle = 'rgba(255,170,0,.9)';
-      _ctx2.lineWidth = 1.5;
-      _ctx2.shadowColor = '#ffaa00';
-      _ctx2.shadowBlur = 7;
-      _ctx2.stroke();
-      _ctx2.restore();
-      var dbs = rms > 1e-6 ? (20 * Math.log10(rms)).toFixed(1) + 'dBFS' : '-∞';
-      _ctx2.fillStyle = 'rgba(255,170,0,.45)';
-      _ctx2.font = '9px monospace';
-      _ctx2.fillText('RMS ' + dbs, CW - 115, EH - 5);
+      ctx.strokeStyle = 'rgba(255,170,0,.9)';
+      ctx.lineWidth = 1.5;
+      ctx.shadowColor = '#ffaa00';
+      ctx.shadowBlur = 7;
+      ctx.stroke();
+      ctx.restore();
+      const dbs = rms > 1e-6 ? (20 * Math.log10(rms)).toFixed(1) + 'dBFS' : '-∞';
+      ctx.fillStyle = 'rgba(255,170,0,.45)';
+      ctx.font = '9px monospace';
+      ctx.fillText('RMS ' + dbs, CW - 115, EH - 5);
     }
   }, [analyserRef, audioCtxRef]);
-  var startLoop = useCallback(function () {
-    var _loop2 = function loop() {
+  const startLoop = useCallback(() => {
+    const loop = () => {
       drawFrame();
-      rafR.current = requestAnimationFrame(_loop2);
+      rafR.current = requestAnimationFrame(loop);
     };
-    rafR.current = requestAnimationFrame(_loop2);
+    rafR.current = requestAnimationFrame(loop);
   }, [drawFrame]);
-  useEffect(function () {
+  useEffect(() => {
     if (micRunning) {
       startLoop();
     } else {
@@ -1404,83 +1361,75 @@ function SoundAnalyzer(_ref) {
       setTuner(null);
       setTimeout(drawIdleAll, 60);
     }
-    return function () {
+    return () => {
       if (rafR.current) cancelAnimationFrame(rafR.current);
     };
   }, [micRunning, startLoop, drawIdleAll]);
 
   /* ─ SNAP PNG ─ */
-  var snapPNG = function snapPNG() {
-    var activeCanvas = viewRef.current === 'spectro' ? spectroR.current : specR.current;
-    var activeH = viewRef.current === 'spectro' ? SPECTROH : SH;
-    var pad = 8,
+  const snapPNG = () => {
+    const activeCanvas = viewRef.current === 'spectro' ? spectroR.current : specR.current;
+    const activeH = viewRef.current === 'spectro' ? SPECTROH : SH;
+    const pad = 8,
       titleH = 24;
-    var C = document.createElement('canvas');
+    const C = document.createElement('canvas');
     C.width = CW;
     C.height = titleH + activeH + pad + EH + pad;
-    var ctx = C.getContext('2d');
+    const ctx = C.getContext('2d');
     ctx.fillStyle = '#020508';
     ctx.fillRect(0, 0, C.width, C.height);
     ctx.fillStyle = 'rgba(0,229,255,.7)';
     ctx.font = 'bold 10px monospace';
-    var mode = viewRef.current === 'spectro' ? 'SPECTROGRAM' : 'SPECTRUM';
-    ctx.fillText("SOUND-ANALYZER ".concat(mode, " SNAPSHOT  ").concat(new Date().toLocaleString(), "  [frozen=").concat(frozenRef.current, "]"), 6, titleH - 6);
+    const mode = viewRef.current === 'spectro' ? 'SPECTROGRAM' : 'SPECTRUM';
+    ctx.fillText(`SOUND-ANALYZER ${mode} SNAPSHOT  ${new Date().toLocaleString()}  [frozen=${frozenRef.current}]`, 6, titleH - 6);
     if (activeCanvas) ctx.drawImage(activeCanvas, 0, titleH);
     if (envR.current) ctx.drawImage(envR.current, 0, titleH + activeH + pad);
-    var a = document.createElement('a');
-    a.download = "snapshot-".concat(Date.now(), ".png");
+    const a = document.createElement('a');
+    a.download = `snapshot-${Date.now()}.png`;
     a.href = C.toDataURL('image/png');
     a.click();
   };
 
   /* ─ EXPORT ENVELOPE CSV ─ */
-  var exportCSV = function exportCSV() {
-    var h = envHist.current;
-    var rows = ['time_ms,rms_linear,rms_dbfs'];
-    var fps = 60,
+  const exportCSV = () => {
+    const h = envHist.current;
+    const rows = ['time_ms,rms_linear,rms_dbfs'];
+    const fps = 60,
       msPerSample = 1000 / fps;
-    h.forEach(function (v, i) {
-      var t = Math.round((i - h.length + 1) * msPerSample);
-      var db = v > 1e-6 ? (20 * Math.log10(v)).toFixed(3) : '-Inf';
-      rows.push("".concat(t, ",").concat(v.toFixed(6), ",").concat(db));
+    h.forEach((v, i) => {
+      const t = Math.round((i - h.length + 1) * msPerSample);
+      const db = v > 1e-6 ? (20 * Math.log10(v)).toFixed(3) : '-Inf';
+      rows.push(`${t},${v.toFixed(6)},${db}`);
     });
-    var blob = new Blob([rows.join('\n')], {
+    const blob = new Blob([rows.join('\n')], {
       type: 'text/csv'
     });
-    var a = document.createElement('a');
-    a.download = "envelope-".concat(Date.now(), ".csv");
+    const a = document.createElement('a');
+    a.download = `envelope-${Date.now()}.csv`;
     a.href = URL.createObjectURL(blob);
     a.click();
-    setTimeout(function () {
-      return URL.revokeObjectURL(a.href);
-    }, 3000);
+    setTimeout(() => URL.revokeObjectURL(a.href), 3000);
   };
 
   /* ─ RECORD AUDIO ─ */
-  var startRec = function startRec() {
+  const startRec = () => {
     if (!streamRef.current) return;
     recChunks.current = [];
-    var mime = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg'].find(function (m) {
-      return MediaRecorder.isTypeSupported(m);
-    }) || '';
-    var mr = new MediaRecorder(streamRef.current, mime ? {
+    const mime = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg'].find(m => MediaRecorder.isTypeSupported(m)) || '';
+    const mr = new MediaRecorder(streamRef.current, mime ? {
       mimeType: mime
     } : {});
-    mr.ondataavailable = function (e) {
-      return e.data.size > 0 && recChunks.current.push(e.data);
-    };
-    mr.onstop = function () {
-      var blob = new Blob(recChunks.current, {
+    mr.ondataavailable = e => e.data.size > 0 && recChunks.current.push(e.data);
+    mr.onstop = () => {
+      const blob = new Blob(recChunks.current, {
         type: mr.mimeType || 'audio/webm'
       });
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement('a');
-      a.download = "recording-".concat(Date.now(), ".webm");
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.download = `recording-${Date.now()}.webm`;
       a.href = url;
       a.click();
-      setTimeout(function () {
-        return URL.revokeObjectURL(url);
-      }, 5000);
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
     };
     mr.start(250);
     mrRef.current = mr;
@@ -1488,25 +1437,23 @@ function SoundAnalyzer(_ref) {
     setIsRec(true);
     setRecSecs(0);
   };
-  var stopRec = function stopRec() {
+  const stopRec = () => {
     var _mrRef$current;
     (_mrRef$current = mrRef.current) === null || _mrRef$current === void 0 || _mrRef$current.stop();
     mrRef.current = null;
     setIsRec(false);
   };
-  var tunerCol = function tunerCol(c) {
-    return Math.abs(c) < 8 ? '#00ff88' : Math.abs(c) < 20 ? '#ffdd00' : '#ff3344';
-  };
+  const tunerCol = c => Math.abs(c) < 8 ? '#00ff88' : Math.abs(c) < 20 ? '#ffdd00' : '#ff3344';
   return /*#__PURE__*/React.createElement("div", {
     className: "panel"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ph"
   }, /*#__PURE__*/React.createElement("span", {
     className: "pt"
-  }, "\u25C8 SOUND-ANALYZER"), /*#__PURE__*/React.createElement("span", {
-    className: "badge".concat(micRunning ? ' live' : '')
+  }, "◈ SOUND-ANALYZER"), /*#__PURE__*/React.createElement("span", {
+    className: `badge${micRunning ? ' live' : ''}`
   }, micStatus), /*#__PURE__*/React.createElement("button", {
-    className: "mbtn ".concat(micRunning ? 'stop' : 'go'),
+    className: `mbtn ${micRunning ? 'stop' : 'go'}`,
     onClick: micRunning ? stopMic : startMic
   }, micRunning ? '⬛ STOP MIC' : '⏺ START MIC')), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -1523,23 +1470,19 @@ function SoundAnalyzer(_ref) {
       letterSpacing: '.13em',
       marginRight: '2px'
     }
-  }, "VIEW:"), ['spectrum', 'spectro'].map(function (m) {
-    return /*#__PURE__*/React.createElement("button", {
-      key: m,
-      onClick: function onClick() {
-        return setViewMode(m);
-      },
-      style: {
-        background: viewMode === m ? 'rgba(0,229,255,.11)' : 'transparent',
-        border: "1px solid ".concat(viewMode === m ? 'var(--c)' : 'var(--bc)'),
-        color: viewMode === m ? 'var(--c)' : 'var(--d)',
-        fontFamily: 'monospace',
-        fontSize: '11px',
-        padding: '4px 10px',
-        cursor: 'pointer'
-      }
-    }, m === 'spectrum' ? '◉ SPECTRUM' : '▦ SPECTRO');
-  }), /*#__PURE__*/React.createElement("span", {
+  }, "VIEW:"), ['spectrum', 'spectro'].map(m => /*#__PURE__*/React.createElement("button", {
+    key: m,
+    onClick: () => setViewMode(m),
+    style: {
+      background: viewMode === m ? 'rgba(0,229,255,.11)' : 'transparent',
+      border: `1px solid ${viewMode === m ? 'var(--c)' : 'var(--bc)'}`,
+      color: viewMode === m ? 'var(--c)' : 'var(--d)',
+      fontFamily: 'monospace',
+      fontSize: '11px',
+      padding: '4px 10px',
+      cursor: 'pointer'
+    }
+  }, m === 'spectrum' ? '◉ SPECTRUM' : '▦ SPECTRO')), /*#__PURE__*/React.createElement("span", {
     style: {
       width: '1px',
       height: '20px',
@@ -1547,14 +1490,10 @@ function SoundAnalyzer(_ref) {
       margin: '0 3px'
     }
   }), micRunning && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
-    onClick: function onClick() {
-      return setFrozen(function (f) {
-        return !f;
-      });
-    },
+    onClick: () => setFrozen(f => !f),
     style: {
       background: frozen ? 'rgba(0,229,255,.1)' : 'transparent',
-      border: "1px solid ".concat(frozen ? 'var(--c)' : 'rgba(0,229,255,.3)'),
+      border: `1px solid ${frozen ? 'var(--c)' : 'rgba(0,229,255,.3)'}`,
       color: frozen ? 'var(--c)' : 'var(--d)',
       fontFamily: 'monospace',
       fontSize: '11px',
@@ -1572,7 +1511,7 @@ function SoundAnalyzer(_ref) {
       padding: '4px 10px',
       cursor: 'pointer'
     }
-  }, "\uD83D\uDCF7 SNAP PNG"), /*#__PURE__*/React.createElement("button", {
+  }, "📷 SNAP PNG"), /*#__PURE__*/React.createElement("button", {
     onClick: exportCSV,
     style: {
       background: 'transparent',
@@ -1583,11 +1522,11 @@ function SoundAnalyzer(_ref) {
       padding: '4px 10px',
       cursor: 'pointer'
     }
-  }, "\uD83D\uDCCA EXPORT CSV"), /*#__PURE__*/React.createElement("button", {
+  }, "📊 EXPORT CSV"), /*#__PURE__*/React.createElement("button", {
     onClick: isRec ? stopRec : startRec,
     style: {
       background: isRec ? 'rgba(255,51,68,.1)' : 'transparent',
-      border: "1px solid ".concat(isRec ? 'var(--r)' : 'rgba(255,51,68,.4)'),
+      border: `1px solid ${isRec ? 'var(--r)' : 'rgba(255,51,68,.4)'}`,
       color: 'var(--r)',
       fontFamily: 'monospace',
       fontSize: '11px',
@@ -1595,7 +1534,7 @@ function SoundAnalyzer(_ref) {
       cursor: 'pointer',
       animation: isRec ? 'pulse 1s infinite' : 'none'
     }
-  }, isRec ? "\u23F9 STOP REC ".concat(fmtSecs(recSecs)) : '⏺ REC AUDIO'))), frozen && /*#__PURE__*/React.createElement("div", {
+  }, isRec ? `⏹ STOP REC ${fmtSecs(recSecs)}` : '⏺ REC AUDIO'))), frozen && /*#__PURE__*/React.createElement("div", {
     style: {
       fontSize: '10px',
       color: 'var(--c)',
@@ -1603,14 +1542,14 @@ function SoundAnalyzer(_ref) {
       marginBottom: '8px',
       padding: '3px 0'
     }
-  }, "\u23F8 DISPLAY FROZEN \u2014 press RESUME to continue"), /*#__PURE__*/React.createElement("div", {
+  }, "⏸ DISPLAY FROZEN — press RESUME to continue"), /*#__PURE__*/React.createElement("div", {
     className: "cwrap",
     style: {
       display: viewMode === 'spectrum' ? 'block' : 'none'
     }
   }, /*#__PURE__*/React.createElement("div", {
     className: "clbl"
-  }, "\u25B8 HARMONIC SPECTRUM \u2500 50Hz \u2500\u2500\u2500 4.2kHz \u2500 LOG SCALE"), /*#__PURE__*/React.createElement("canvas", {
+  }, "▸ HARMONIC SPECTRUM ─ 50Hz ─── 4.2kHz ─ LOG SCALE"), /*#__PURE__*/React.createElement("canvas", {
     ref: specR,
     width: CW,
     height: SH,
@@ -1622,7 +1561,7 @@ function SoundAnalyzer(_ref) {
     }
   }, /*#__PURE__*/React.createElement("div", {
     className: "clbl"
-  }, "\u25B8 SPECTROGRAM \u2500 TIME-FREQUENCY HISTORY \u2500 NEWEST FRAME AT BOTTOM"), /*#__PURE__*/React.createElement("canvas", {
+  }, "▸ SPECTROGRAM ─ TIME-FREQUENCY HISTORY ─ NEWEST FRAME AT BOTTOM"), /*#__PURE__*/React.createElement("canvas", {
     ref: spectroR,
     width: CW,
     height: SPECTROH,
@@ -1649,17 +1588,15 @@ function SoundAnalyzer(_ref) {
       color: 'var(--d)',
       letterSpacing: '.14em'
     }
-  }, "PEAKS:"), pks.map(function (p, i) {
-    return /*#__PURE__*/React.createElement("span", {
-      key: i,
-      style: {
-        fontSize: '11px',
-        padding: '2px 8px',
-        border: '1px solid rgba(255,170,0,.2)',
-        color: 'var(--a)'
-      }
-    }, p.note, " ", p.f, "Hz");
-  })), tuner && /*#__PURE__*/React.createElement("div", {
+  }, "PEAKS:"), pks.map((p, i) => /*#__PURE__*/React.createElement("span", {
+    key: i,
+    style: {
+      fontSize: '11px',
+      padding: '2px 8px',
+      border: '1px solid rgba(255,170,0,.2)',
+      color: 'var(--a)'
+    }
+  }, p.note, " ", p.f, "Hz"))), tuner && /*#__PURE__*/React.createElement("div", {
     className: "tuner"
   }, /*#__PURE__*/React.createElement("span", {
     className: "tnote"
@@ -1674,17 +1611,17 @@ function SoundAnalyzer(_ref) {
     style: {
       left: Math.max(0, Math.min(100, 50 + tuner.cents)) + '%',
       background: tunerCol(tuner.cents),
-      boxShadow: "0 0 6px ".concat(tunerCol(tuner.cents))
+      boxShadow: `0 0 6px ${tunerCol(tuner.cents)}`
     }
   })), /*#__PURE__*/React.createElement("div", {
     className: "tmeter-labels"
-  }, /*#__PURE__*/React.createElement("span", null, "-50\xA2"), /*#__PURE__*/React.createElement("span", null, "0"), /*#__PURE__*/React.createElement("span", null, "+50\xA2"))), /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement("span", null, "-50¢"), /*#__PURE__*/React.createElement("span", null, "0"), /*#__PURE__*/React.createElement("span", null, "+50¢"))), /*#__PURE__*/React.createElement("span", {
     className: "tcents",
     style: {
       color: tunerCol(tuner.cents),
-      textShadow: "0 0 8px ".concat(tunerCol(tuner.cents))
+      textShadow: `0 0 8px ${tunerCol(tuner.cents)}`
     }
-  }, tuner.cents >= 0 ? '+' : '', tuner.cents, "\xA2"), /*#__PURE__*/React.createElement("span", {
+  }, tuner.cents >= 0 ? '+' : '', tuner.cents, "¢"), /*#__PURE__*/React.createElement("span", {
     style: {
       fontSize: '9px',
       color: 'var(--d)'
@@ -1693,7 +1630,7 @@ function SoundAnalyzer(_ref) {
     className: "cwrap"
   }, /*#__PURE__*/React.createElement("div", {
     className: "clbl"
-  }, "\u25B8 AMPLITUDE ENVELOPE \u2500 TIME HISTORY \u2500 NEWEST \u2192 RIGHT"), /*#__PURE__*/React.createElement("canvas", {
+  }, "▸ AMPLITUDE ENVELOPE ─ TIME HISTORY ─ NEWEST → RIGHT"), /*#__PURE__*/React.createElement("canvas", {
     ref: envR,
     width: CW,
     height: EH,
@@ -1702,98 +1639,83 @@ function SoundAnalyzer(_ref) {
 }
 
 /* ══════════════ TONE ADVISOR ══════════════ */
-function ToneAdvisor(_ref2) {
-  var analyserRef = _ref2.analyserRef,
-    audioCtxRef = _ref2.audioCtxRef,
-    micRunning = _ref2.micRunning;
-  var _useState11 = useState('Cornet'),
-    _useState12 = _slicedToArray(_useState11, 2),
-    inst = _useState12[0],
-    setInst = _useState12[1];
-  var _useState13 = useState(null),
-    _useState14 = _slicedToArray(_useState13, 2),
-    harmonics = _useState14[0],
-    setHarmonics = _useState14[1];
-  var _useState15 = useState([]),
-    _useState16 = _slicedToArray(_useState15, 2),
-    advice = _useState16[0],
-    setAdvice = _useState16[1];
-  var _useState17 = useState(''),
-    _useState18 = _slicedToArray(_useState17, 2),
-    aiText = _useState18[0],
-    setAiText = _useState18[1];
-  var _useState19 = useState(false),
-    _useState20 = _slicedToArray(_useState19, 2),
-    aiLoading = _useState20[0],
-    setAiLoading = _useState20[1];
-  var rafR = useRef(null);
-  var lupd = useRef(0);
-  var instRef = useRef('Cornet');
-  useEffect(function () {
+function ToneAdvisor({
+  analyserRef,
+  audioCtxRef,
+  micRunning
+}) {
+  const [inst, setInst] = useState('Cornet');
+  const [harmonics, setHarmonics] = useState(null);
+  const [advice, setAdvice] = useState([]);
+  const [aiText, setAiText] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
+  const rafR = useRef(null);
+  const lupd = useRef(0);
+  const instRef = useRef('Cornet');
+  useEffect(() => {
     instRef.current = inst;
   }, [inst]);
-  var analyzeHarmonics = useCallback(function (fd, hzBin, bufL) {
+  const analyzeHarmonics = useCallback((fd, hzBin, bufL) => {
     var _ratios$, _ratios$2, _ratios$3, _ratios$4;
-    var profile = TONE_PROFILES[instRef.current];
+    const profile = TONE_PROFILES[instRef.current];
     if (!profile) return null;
-    var _profile$fundRange = _slicedToArray(profile.fundRange, 2),
-      fLo = _profile$fundRange[0],
-      fHi = _profile$fundRange[1];
+    const [fLo, fHi] = profile.fundRange;
     // Find strongest bin in fundamental range
-    var maxDb = -Infinity,
+    let maxDb = -Infinity,
       fundBin = 0;
-    for (var b = Math.floor(fLo / hzBin); b <= Math.min(Math.ceil(fHi / hzBin), bufL - 1); b++) {
+    for (let b = Math.floor(fLo / hzBin); b <= Math.min(Math.ceil(fHi / hzBin), bufL - 1); b++) {
       if (isFinite(fd[b]) && fd[b] > maxDb) {
         maxDb = fd[b];
         fundBin = b;
       }
     }
     if (!isFinite(maxDb) || maxDb < -80) return null;
-    var fundFreq = fundBin * hzBin;
+    const fundFreq = fundBin * hzBin;
     if (fundFreq < 20) return null;
     // Extract H1-H8 amplitudes
-    var harms = [];
-    for (var n = 1; n <= 8; n++) {
-      var tb = Math.round(fundFreq * n / hzBin);
-      var peak = -Infinity;
-      for (var _b = Math.max(0, tb - 4); _b <= Math.min(bufL - 1, tb + 4); _b++) {
-        if (isFinite(fd[_b]) && fd[_b] > peak) peak = fd[_b];
+    const harms = [];
+    for (let n = 1; n <= 8; n++) {
+      const tb = Math.round(fundFreq * n / hzBin);
+      let peak = -Infinity;
+      for (let b = Math.max(0, tb - 4); b <= Math.min(bufL - 1, tb + 4); b++) {
+        if (isFinite(fd[b]) && fd[b] > peak) peak = fd[b];
       }
-      var amp = peak > -100 ? Math.pow(10, peak / 20) : 0;
+      const amp = peak > -100 ? Math.pow(10, peak / 20) : 0;
       harms.push({
-        n: n,
+        n,
         freq: Math.round(fundFreq * n),
         db: Math.round(peak),
-        amp: amp
+        amp
       });
     }
-    var H1 = harms[0].amp || 1e-10;
-    var ratios = harms.map(function (h) {
-      return _objectSpread(_objectSpread({}, h), {}, {
-        ratio: h.amp / H1
-      });
-    });
-    var H2r = ((_ratios$ = ratios[1]) === null || _ratios$ === void 0 ? void 0 : _ratios$.ratio) || 0,
+    const H1 = harms[0].amp || 1e-10;
+    const ratios = harms.map(h => ({
+      ...h,
+      ratio: h.amp / H1
+    }));
+    const H2r = ((_ratios$ = ratios[1]) === null || _ratios$ === void 0 ? void 0 : _ratios$.ratio) || 0,
       H3r = ((_ratios$2 = ratios[2]) === null || _ratios$2 === void 0 ? void 0 : _ratios$2.ratio) || 0;
-    var H4r = ((_ratios$3 = ratios[3]) === null || _ratios$3 === void 0 ? void 0 : _ratios$3.ratio) || 0,
+    const H4r = ((_ratios$3 = ratios[3]) === null || _ratios$3 === void 0 ? void 0 : _ratios$3.ratio) || 0,
       H5r = ((_ratios$4 = ratios[4]) === null || _ratios$4 === void 0 ? void 0 : _ratios$4.ratio) || 0;
-    var brightness = (H3r + H4r + H5r) / (1 + H2r);
-    var warmth = H2r;
+    const brightness = (H3r + H4r + H5r) / (1 + H2r);
+    const warmth = H2r;
     return {
       fundFreq: Math.round(fundFreq),
-      ratios: ratios,
-      brightness: brightness,
-      warmth: warmth,
-      profile: profile
+      ratios,
+      brightness,
+      warmth,
+      profile
     };
   }, []);
-  var genAdvice = useCallback(function (data) {
+  const genAdvice = useCallback(data => {
     if (!data) return [];
-    var brightness = data.brightness,
-      warmth = data.warmth,
-      profile = data.profile;
-    var tips = [];
-    var B = profile.brightness,
+    const {
+      brightness,
+      warmth,
+      profile
+    } = data;
+    const tips = [];
+    const B = profile.brightness,
       W = profile.warmth;
     if (brightness > B.max) tips.push({
       type: 'warn',
@@ -1803,7 +1725,7 @@ function ToneAdvisor(_ref2) {
       txt: profile.advice.tooDark
     });else tips.push({
       type: 'ok',
-      txt: ['Brightness is in the target range ✓', "\u660E\u308B\u3055\u306F\u76EE\u6A19\u7BC4\u56F2\u5185 \u2713"]
+      txt: ['Brightness is in the target range ✓', `明るさは目標範囲内 ✓`]
     });
     if (warmth > W.max) tips.push({
       type: 'warn',
@@ -1815,114 +1737,94 @@ function ToneAdvisor(_ref2) {
       type: 'ok',
       txt: ['2nd harmonic warmth is ideal ✓', '第2倍音の暖かさは理想的 ✓']
     });
-    if (tips.every(function (t) {
-      return t.type === 'ok';
-    })) tips.push({
+    if (tips.every(t => t.type === 'ok')) tips.push({
       type: 'great',
       txt: profile.advice.good
     });
     return tips;
   }, []);
-  useEffect(function () {
+  useEffect(() => {
     if (!micRunning) {
       if (rafR.current) cancelAnimationFrame(rafR.current);
       setHarmonics(null);
       setAdvice([]);
       return;
     }
-    var _loop3 = function loop() {
+    const loop = () => {
       if (analyserRef.current && audioCtxRef.current) {
-        var an = analyserRef.current,
+        const an = analyserRef.current,
           sr = audioCtxRef.current.sampleRate;
-        var hzBin = sr / an.fftSize,
+        const hzBin = sr / an.fftSize,
           bufL = an.frequencyBinCount;
-        var fd = new Float32Array(bufL);
+        const fd = new Float32Array(bufL);
         an.getFloatFrequencyData(fd);
-        var now = performance.now();
+        const now = performance.now();
         if (now - lupd.current > 220) {
           lupd.current = now;
-          var data = analyzeHarmonics(fd, hzBin, bufL);
+          const data = analyzeHarmonics(fd, hzBin, bufL);
           setHarmonics(data);
           setAdvice(genAdvice(data));
         }
       }
-      rafR.current = requestAnimationFrame(_loop3);
+      rafR.current = requestAnimationFrame(loop);
     };
-    rafR.current = requestAnimationFrame(_loop3);
-    return function () {
+    rafR.current = requestAnimationFrame(loop);
+    return () => {
       if (rafR.current) cancelAnimationFrame(rafR.current);
     };
   }, [micRunning, analyserRef, audioCtxRef, analyzeHarmonics, genAdvice]);
-  var askClaude = /*#__PURE__*/function () {
-    var _askClaude = _asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee() {
-      var fundFreq, ratios, brightness, warmth, ratioStr, prof, prompt, res, d, txt, _t;
-      return _regenerator().w(function (_context) {
-        while (1) switch (_context.p = _context.n) {
-          case 0:
-            if (harmonics) {
-              _context.n = 1;
-              break;
-            }
-            return _context.a(2);
-          case 1:
-            setAiLoading(true);
-            setAiText('');
-            fundFreq = harmonics.fundFreq, ratios = harmonics.ratios, brightness = harmonics.brightness, warmth = harmonics.warmth;
-            ratioStr = ratios.slice(0, 6).map(function (r) {
-              return "H".concat(r.n, "=").concat(r.ratio.toFixed(2));
-            }).join(', ');
-            prof = TONE_PROFILES[inst];
-            prompt = "You are an expert British brass band conductor and instrument pedagogue with 30+ years experience including championship section.\n\nA ".concat(inst, " player's live tone data:\n\u2022 Fundamental: ").concat(fundFreq, "Hz\n\u2022 Harmonic ratios (H1=1.0): ").concat(ratioStr, "\n\u2022 Brightness index: ").concat(brightness.toFixed(3), " (target: ").concat(prof.brightness.min, "\u2013").concat(prof.brightness.max, ")\n\u2022 Warmth (H2/H1): ").concat(warmth.toFixed(3), " (target: ").concat(prof.warmth.min, "\u2013").concat(prof.warmth.max, ")\n\u2022 Target ratios for championship section: ").concat(JSON.stringify(prof.targetRatios), "\n\u2022 Instrument character: ").concat(prof.description, "\n\nGive 4 specific, actionable bullet points comparing this to championship-section sound. \nFor EACH point write: English sentence first, then Japanese translation on the next line.\nFocus on physical technique the player can immediately apply.");
-            _context.p = 2;
-            _context.n = 3;
-            return fetch('https://api.anthropic.com/v1/messages', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                model: 'claude-sonnet-4-6',
-                max_tokens: 1000,
-                messages: [{
-                  role: 'user',
-                  content: prompt
-                }]
-              })
-            });
-          case 3:
-            res = _context.v;
-            _context.n = 4;
-            return res.json();
-          case 4:
-            d = _context.v;
-            txt = (d.content || []).filter(function (b) {
-              return b.type === 'text';
-            }).map(function (b) {
-              return b.text;
-            }).join('');
-            setAiText(txt || 'No response received.');
-            _context.n = 6;
-            break;
-          case 5:
-            _context.p = 5;
-            _t = _context.v;
-            setAiText('⚠ Error: ' + _t.message + '\n\nインターネット接続が必要です。');
-          case 6:
-            setAiLoading(false);
-          case 7:
-            return _context.a(2);
-        }
-      }, _callee, null, [[2, 5]]);
-    }));
-    function askClaude() {
-      return _askClaude.apply(this, arguments);
+  const askClaude = async () => {
+    if (!harmonics) return;
+    setAiLoading(true);
+    setAiText('');
+    const {
+      fundFreq,
+      ratios,
+      brightness,
+      warmth
+    } = harmonics;
+    const ratioStr = ratios.slice(0, 6).map(r => `H${r.n}=${r.ratio.toFixed(2)}`).join(', ');
+    const prof = TONE_PROFILES[inst];
+    const prompt = `You are an expert British brass band conductor and instrument pedagogue with 30+ years experience including championship section.
+
+A ${inst} player's live tone data:
+• Fundamental: ${fundFreq}Hz
+• Harmonic ratios (H1=1.0): ${ratioStr}
+• Brightness index: ${brightness.toFixed(3)} (target: ${prof.brightness.min}–${prof.brightness.max})
+• Warmth (H2/H1): ${warmth.toFixed(3)} (target: ${prof.warmth.min}–${prof.warmth.max})
+• Target ratios for championship section: ${JSON.stringify(prof.targetRatios)}
+• Instrument character: ${prof.description}
+
+Give 4 specific, actionable bullet points comparing this to championship-section sound. 
+For EACH point write: English sentence first, then Japanese translation on the next line.
+Focus on physical technique the player can immediately apply.`;
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 1000,
+          messages: [{
+            role: 'user',
+            content: prompt
+          }]
+        })
+      });
+      const d = await res.json();
+      const txt = (d.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+      setAiText(txt || 'No response received.');
+    } catch (e) {
+      setAiText('⚠ Error: ' + e.message + '\n\nインターネット接続が必要です。');
     }
-    return askClaude;
-  }();
-  var instList = Object.keys(TONE_PROFILES);
-  var profile = TONE_PROFILES[inst];
-  var harmColor = function harmColor(ratio, target) {
-    var diff = Math.abs(ratio - (target || 0));
+    setAiLoading(false);
+  };
+  const instList = Object.keys(TONE_PROFILES);
+  const profile = TONE_PROFILES[inst];
+  const harmColor = (ratio, target) => {
+    const diff = Math.abs(ratio - (target || 0));
     return diff < 0.09 ? '#00ff88' : diff < 0.20 ? '#ffdd00' : '#ff5555';
   };
   return /*#__PURE__*/React.createElement("div", {
@@ -1931,13 +1833,13 @@ function ToneAdvisor(_ref2) {
     className: "ph"
   }, /*#__PURE__*/React.createElement("span", {
     className: "pt"
-  }, "\u25C8 TONE-ADVISOR"), /*#__PURE__*/React.createElement("span", {
+  }, "◈ TONE-ADVISOR"), /*#__PURE__*/React.createElement("span", {
     style: {
       fontSize: '10px',
       color: 'var(--d)',
       letterSpacing: '.07em'
     }
-  }, "Championship Brass Band \xB7 Real-time Tone Analysis")), !micRunning && /*#__PURE__*/React.createElement("div", {
+  }, "Championship Brass Band · Real-time Tone Analysis")), !micRunning && /*#__PURE__*/React.createElement("div", {
     style: {
       padding: '28px',
       textAlign: 'center',
@@ -1946,13 +1848,13 @@ function ToneAdvisor(_ref2) {
       fontSize: '12px',
       letterSpacing: '.1em'
     }
-  }, "\u25B6 Start the microphone on the SOUND-ANALYZER tab first", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("span", {
+  }, "▶ Start the microphone on the SOUND-ANALYZER tab first", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("span", {
     style: {
       fontSize: '10px',
       marginTop: '8px',
       display: 'block'
     }
-  }, "SOUND-ANALYZER\u30BF\u30D6\u3067\u30DE\u30A4\u30AF\u3092\u5148\u306B\u8D77\u52D5\u3057\u3066\u304F\u3060\u3055\u3044")), micRunning && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  }, "SOUND-ANALYZERタブでマイクを先に起動してください")), micRunning && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     style: {
       marginBottom: '12px'
     }
@@ -1963,30 +1865,26 @@ function ToneAdvisor(_ref2) {
       letterSpacing: '.18em',
       marginBottom: '7px'
     }
-  }, "YOUR INSTRUMENT / \u3042\u306A\u305F\u306E\u697D\u5668"), /*#__PURE__*/React.createElement("div", {
+  }, "YOUR INSTRUMENT / あなたの楽器"), /*#__PURE__*/React.createElement("div", {
     style: {
       display: 'flex',
       gap: '4px',
       flexWrap: 'wrap'
     }
-  }, instList.map(function (i) {
-    return /*#__PURE__*/React.createElement("button", {
-      key: i,
-      onClick: function onClick() {
-        return setInst(i);
-      },
-      style: {
-        background: inst === i ? 'rgba(255,170,0,.11)' : 'transparent',
-        border: "1px solid ".concat(inst === i ? 'var(--a)' : 'var(--bc)'),
-        color: inst === i ? 'var(--a)' : 'var(--d)',
-        fontFamily: 'monospace',
-        fontSize: '11px',
-        padding: '5px 10px',
-        cursor: 'pointer',
-        textShadow: inst === i ? '0 0 8px var(--a)' : 'none'
-      }
-    }, i);
-  }))), /*#__PURE__*/React.createElement("div", {
+  }, instList.map(i => /*#__PURE__*/React.createElement("button", {
+    key: i,
+    onClick: () => setInst(i),
+    style: {
+      background: inst === i ? 'rgba(255,170,0,.11)' : 'transparent',
+      border: `1px solid ${inst === i ? 'var(--a)' : 'var(--bc)'}`,
+      color: inst === i ? 'var(--a)' : 'var(--d)',
+      fontFamily: 'monospace',
+      fontSize: '11px',
+      padding: '5px 10px',
+      cursor: 'pointer',
+      textShadow: inst === i ? '0 0 8px var(--a)' : 'none'
+    }
+  }, i)))), /*#__PURE__*/React.createElement("div", {
     style: {
       padding: '8px 12px',
       border: '1px solid rgba(255,170,0,.18)',
@@ -1999,7 +1897,7 @@ function ToneAdvisor(_ref2) {
       color: 'var(--a)',
       letterSpacing: '.12em'
     }
-  }, inst.toUpperCase(), " \u2500 "), /*#__PURE__*/React.createElement("span", {
+  }, inst.toUpperCase(), " ─ "), /*#__PURE__*/React.createElement("span", {
     style: {
       fontSize: '11px',
       color: 'var(--t)'
@@ -2013,11 +1911,11 @@ function ToneAdvisor(_ref2) {
       letterSpacing: '.1em',
       border: '1px solid rgba(0,229,255,.1)'
     }
-  }, "Play a sustained note to begin analysis\u2026", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("span", {
+  }, "Play a sustained note to begin analysis…", /*#__PURE__*/React.createElement("br", null), /*#__PURE__*/React.createElement("span", {
     style: {
       fontSize: '10px'
     }
-  }, "\u97F3\u3092\u4F38\u3070\u3057\u3066\u5439\u3044\u3066\u304F\u3060\u3055\u3044")), harmonics && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  }, "音を伸ばして吹いてください")), harmonics && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     style: {
       marginBottom: '16px',
       border: '1px solid rgba(0,229,255,.13)',
@@ -2031,16 +1929,16 @@ function ToneAdvisor(_ref2) {
       letterSpacing: '.14em',
       marginBottom: '10px'
     }
-  }, "\u25B8 HARMONIC SERIES \u2014 MEASURED (bar) vs CHAMPIONSHIP TARGET (\u2502 marker)"), /*#__PURE__*/React.createElement("div", {
+  }, "▸ HARMONIC SERIES — MEASURED (bar) vs CHAMPIONSHIP TARGET (│ marker)"), /*#__PURE__*/React.createElement("div", {
     style: {
       display: 'grid',
       gap: '5px'
     }
-  }, harmonics.ratios.slice(0, 8).map(function (h) {
-    var target = h.n === 1 ? 1.0 : (profile === null || profile === void 0 ? void 0 : profile.targetRatios["H".concat(h.n)]) || 0;
-    var measPct = Math.min(100, h.ratio * 100);
-    var tgtPct = Math.min(100, target * 100);
-    var col = harmColor(h.ratio, target);
+  }, harmonics.ratios.slice(0, 8).map(h => {
+    const target = h.n === 1 ? 1.0 : (profile === null || profile === void 0 ? void 0 : profile.targetRatios[`H${h.n}`]) || 0;
+    const measPct = Math.min(100, h.ratio * 100);
+    const tgtPct = Math.min(100, target * 100);
+    const col = harmColor(h.ratio, target);
     return /*#__PURE__*/React.createElement("div", {
       key: h.n,
       style: {
@@ -2067,7 +1965,7 @@ function ToneAdvisor(_ref2) {
     }, /*#__PURE__*/React.createElement("div", {
       style: {
         position: 'absolute',
-        left: "".concat(tgtPct, "%"),
+        left: `${tgtPct}%`,
         top: 0,
         width: '2px',
         height: '100%',
@@ -2077,7 +1975,7 @@ function ToneAdvisor(_ref2) {
     }), /*#__PURE__*/React.createElement("div", {
       style: {
         height: '100%',
-        width: "".concat(measPct, "%"),
+        width: `${measPct}%`,
         background: col,
         opacity: .85,
         transition: 'width .25s',
@@ -2118,18 +2016,19 @@ function ToneAdvisor(_ref2) {
     val: harmonics.warmth,
     range: profile === null || profile === void 0 ? void 0 : profile.warmth,
     desc: '2nd harmonic richness — characteristic tonal depth'
-  }].map(function (_ref3) {
-    var lbl = _ref3.lbl,
-      val = _ref3.val,
-      range = _ref3.range,
-      desc = _ref3.desc;
+  }].map(({
+    lbl,
+    val,
+    range,
+    desc
+  }) => {
     if (!range) return null;
-    var scale = range.max * 1.6;
-    var pct = Math.max(0, Math.min(100, val / scale * 100));
-    var idealL = range.min / scale * 100;
-    var idealW = (range.max - range.min) / scale * 100;
-    var inRange = val >= range.min && val <= range.max;
-    var col = inRange ? '#00ff88' : '#ff5555';
+    const scale = range.max * 1.6;
+    const pct = Math.max(0, Math.min(100, val / scale * 100));
+    const idealL = range.min / scale * 100;
+    const idealW = (range.max - range.min) / scale * 100;
+    const inRange = val >= range.min && val <= range.max;
+    const col = inRange ? '#00ff88' : '#ff5555';
     return /*#__PURE__*/React.createElement("div", {
       key: lbl,
       style: {
@@ -2155,8 +2054,8 @@ function ToneAdvisor(_ref2) {
     }, /*#__PURE__*/React.createElement("div", {
       style: {
         position: 'absolute',
-        left: "".concat(idealL, "%"),
-        width: "".concat(idealW, "%"),
+        left: `${idealL}%`,
+        width: `${idealW}%`,
         height: '100%',
         background: 'rgba(0,255,136,.18)',
         borderRadius: '1px'
@@ -2164,13 +2063,13 @@ function ToneAdvisor(_ref2) {
     }), /*#__PURE__*/React.createElement("div", {
       style: {
         position: 'absolute',
-        left: "".concat(pct, "%"),
+        left: `${pct}%`,
         top: '-3px',
         width: '3px',
         height: '15px',
         background: col,
         transform: 'translateX(-50%)',
-        boxShadow: "0 0 6px ".concat(col),
+        boxShadow: `0 0 6px ${col}`,
         borderRadius: '1px'
       }
     })), /*#__PURE__*/React.createElement("div", {
@@ -2208,7 +2107,7 @@ function ToneAdvisor(_ref2) {
         color: 'rgba(0,255,136,.6)',
         marginTop: '2px'
       }
-    }, "\u25A0 target: ", range.min.toFixed(2), "\u2013", range.max.toFixed(2)));
+    }, "■ target: ", range.min.toFixed(2), "–", range.max.toFixed(2)));
   }))), /*#__PURE__*/React.createElement("div", {
     style: {
       marginBottom: '14px'
@@ -2220,16 +2119,16 @@ function ToneAdvisor(_ref2) {
       letterSpacing: '.14em',
       marginBottom: '8px'
     }
-  }, "\u25B8 REAL-TIME TONE ANALYSIS"), advice.map(function (tip, i) {
-    var isOk = tip.type === 'ok' || tip.type === 'great';
-    var col = tip.type === 'great' ? '#00ff88' : isOk ? 'var(--c)' : 'var(--r)';
-    var bcol = tip.type === 'great' ? 'rgba(0,255,136,.3)' : isOk ? 'rgba(0,229,255,.2)' : 'rgba(255,51,68,.3)';
+  }, "▸ REAL-TIME TONE ANALYSIS"), advice.map((tip, i) => {
+    const isOk = tip.type === 'ok' || tip.type === 'great';
+    const col = tip.type === 'great' ? '#00ff88' : isOk ? 'var(--c)' : 'var(--r)';
+    const bcol = tip.type === 'great' ? 'rgba(0,255,136,.3)' : isOk ? 'rgba(0,229,255,.2)' : 'rgba(255,51,68,.3)';
     return /*#__PURE__*/React.createElement("div", {
       key: i,
       style: {
         padding: '9px 12px',
         marginBottom: '5px',
-        border: "1px solid ".concat(bcol),
+        border: `1px solid ${bcol}`,
         background: isOk ? 'rgba(0,229,255,.04)' : 'rgba(255,51,68,.04)'
       }
     }, /*#__PURE__*/React.createElement("div", {
@@ -2258,7 +2157,7 @@ function ToneAdvisor(_ref2) {
       letterSpacing: '.14em',
       marginBottom: '9px'
     }
-  }, "\u2726 CLAUDE AI ADVISOR \u2014 Championship-level detailed feedback"), /*#__PURE__*/React.createElement("button", {
+  }, "✦ CLAUDE AI ADVISOR — Championship-level detailed feedback"), /*#__PURE__*/React.createElement("button", {
     onClick: askClaude,
     disabled: aiLoading,
     style: {
@@ -2277,7 +2176,7 @@ function ToneAdvisor(_ref2) {
       color: 'var(--d)',
       marginTop: '5px'
     }
-  }, "\u203B Requires internet \xB7 \u30A4\u30F3\u30BF\u30FC\u30CD\u30C3\u30C8\u63A5\u7D9A\u304C\u5FC5\u8981"), aiText && /*#__PURE__*/React.createElement("div", {
+  }, "※ Requires internet · インターネット接続が必要"), aiText && /*#__PURE__*/React.createElement("div", {
     style: {
       marginTop: '13px',
       padding: '12px',
@@ -2293,92 +2192,71 @@ function ToneAdvisor(_ref2) {
 
 /* ══════════════ TUNING MATRIX ══════════════ */
 function TuningMatrix() {
-  var _useState21 = useState(0),
-    _useState22 = _slicedToArray(_useState21, 2),
-    root = _useState22[0],
-    setRoot = _useState22[1];
-  var _useState23 = useState('Major'),
-    _useState24 = _slicedToArray(_useState23, 2),
-    ctype = _useState24[0],
-    setCtype = _useState24[1];
-  var _useState25 = useState(function () {
-      return Object.fromEntries(INST.map(function (i) {
-        return [i.id, ''];
-      }));
-    }),
-    _useState26 = _slicedToArray(_useState25, 2),
-    notes = _useState26[0],
-    setNotes = _useState26[1];
-  var actxR = useRef(null);
-  var ct = CHORD_TYPES.find(function (c) {
-    return c.id === ctype;
-  });
-  var chordTones = ct ? ct.iv.map(function (i) {
-    return (root + i) % 12;
-  }) : [];
-  var analyze = function analyze(id) {
-    var inst = INST.find(function (i) {
-      return i.id === id;
-    });
-    var wn = notes[id];
+  const [root, setRoot] = useState(0);
+  const [ctype, setCtype] = useState('Major');
+  const [notes, setNotes] = useState(() => Object.fromEntries(INST.map(i => [i.id, ''])));
+  const actxR = useRef(null);
+  const ct = CHORD_TYPES.find(c => c.id === ctype);
+  const chordTones = ct ? ct.iv.map(i => (root + i) % 12) : [];
+  const analyze = id => {
+    const inst = INST.find(i => i.id === id);
+    const wn = notes[id];
     if (!wn) return null;
-    var wi = n2i(wn);
+    const wi = n2i(wn);
     if (wi < 0) return null;
-    var ci = ((wi + inst.tr) % 12 + 12) % 12;
-    var interval = (ci - root + 12) % 12;
-    var inChord = chordTones.includes(ci);
-    var degIdx = ct ? ct.iv.indexOf(interval) : -1;
+    const ci = ((wi + inst.tr) % 12 + 12) % 12;
+    const interval = (ci - root + 12) % 12;
+    const inChord = chordTones.includes(ci);
+    const degIdx = ct ? ct.iv.indexOf(interval) : -1;
     return {
       concertNote: i2n(ci),
-      interval: interval,
+      interval,
       ji: JI[interval],
-      inChord: inChord,
-      degIdx: degIdx
+      inChord,
+      degIdx
     };
   };
-  var getVoicing = function getVoicing() {
-    var g = {
+  const getVoicing = () => {
+    const g = {
       root: [],
       third: [],
       fifth: [],
       sev: [],
       out: []
     };
-    INST.forEach(function (inst) {
-      var a = analyze(inst.id);
+    INST.forEach(inst => {
+      const a = analyze(inst.id);
       if (!a) return;
       if (!a.inChord) {
         g.out.push(inst.name);
         return;
       }
-      var keys = ['root', 'third', 'fifth', 'sev'];
-      var k = keys[a.degIdx];
+      const keys = ['root', 'third', 'fifth', 'sev'];
+      const k = keys[a.degIdx];
       if (k && g[k]) g[k].push(inst.name);else g.out.push(inst.name);
     });
     return g;
   };
-  var playChord = function playChord() {
+  const playChord = () => {
     if (actxR.current) actxR.current.close();
-    var actx = new (window.AudioContext || window.webkitAudioContext)();
+    const actx = new (window.AudioContext || window.webkitAudioContext)();
     actxR.current = actx;
-    var master = actx.createGain();
+    const master = actx.createGain();
     master.gain.setValueAtTime(0.38, actx.currentTime);
     master.connect(actx.destination);
-    var cnt = INST.filter(function (i) {
-      return notes[i.id] && n2i(notes[i.id]) >= 0;
-    }).length;
+    const cnt = INST.filter(i => notes[i.id] && n2i(notes[i.id]) >= 0).length;
     if (!cnt) return;
-    INST.forEach(function (inst) {
-      var wn = notes[inst.id];
+    INST.forEach(inst => {
+      const wn = notes[inst.id];
       if (!wn) return;
-      var wi = n2i(wn);
+      const wi = n2i(wn);
       if (wi < 0) return;
-      var ci = ((wi + inst.tr) % 12 + 12) % 12;
-      var interval = (ci - root + 12) % 12;
-      var jiC = JI[interval].c;
-      var oct = AOCT[inst.id] || 4;
-      var jiF = midi2f(wi + (oct + 1) * 12 + inst.tr) * Math.pow(2, jiC / 1200);
-      var osc = actx.createOscillator(),
+      const ci = ((wi + inst.tr) % 12 + 12) % 12;
+      const interval = (ci - root + 12) % 12;
+      const jiC = JI[interval].c;
+      const oct = AOCT[inst.id] || 4;
+      const jiF = midi2f(wi + (oct + 1) * 12 + inst.tr) * Math.pow(2, jiC / 1200);
+      const osc = actx.createOscillator(),
         g = actx.createGain();
       osc.type = 'triangle';
       osc.frequency.setValueAtTime(jiF, actx.currentTime);
@@ -2391,16 +2269,10 @@ function TuningMatrix() {
       osc.stop(actx.currentTime + 3.6);
     });
   };
-  var clearAll = function clearAll() {
-    return setNotes(Object.fromEntries(INST.map(function (i) {
-      return [i.id, ''];
-    })));
-  };
-  var hasNotes = Object.values(notes).some(function (n) {
-    return n !== '';
-  });
-  var v = getVoicing();
-  var VBOXES = [{
+  const clearAll = () => setNotes(Object.fromEntries(INST.map(i => [i.id, ''])));
+  const hasNotes = Object.values(notes).some(n => n !== '');
+  const v = getVoicing();
+  const VBOXES = [{
     k: 'root',
     title: 'ROOT',
     color: 'var(--a)'
@@ -2420,13 +2292,15 @@ function TuningMatrix() {
     k: 'out',
     title: '⚠ OUT',
     color: 'var(--r)'
-  }].filter(function (b) {
+  }].filter(b => {
     var _v$b$k;
     return ((_v$b$k = v[b.k]) === null || _v$b$k === void 0 ? void 0 : _v$b$k.length) > 0;
   });
-  var centsRow = function centsRow(a) {
+  const centsRow = a => {
     if (!a || !a.inChord) return null;
-    var c = a.ji.c,
+    const {
+        c
+      } = a.ji,
       col = cColor(c);
     return /*#__PURE__*/React.createElement("div", {
       style: {
@@ -2441,9 +2315,9 @@ function TuningMatrix() {
         fontSize: '17px',
         fontWeight: '700',
         color: col,
-        textShadow: "0 0 8px ".concat(col)
+        textShadow: `0 0 8px ${col}`
       }
-    }, c === 0 ? '± 0¢' : c > 0 ? "\u25B2 +".concat(c, "\xA2") : "\u25BC ".concat(c, "\xA2")), /*#__PURE__*/React.createElement("span", {
+    }, c === 0 ? '± 0¢' : c > 0 ? `▲ +${c}¢` : `▼ ${c}¢`), /*#__PURE__*/React.createElement("span", {
       style: {
         fontSize: '9px',
         color: 'var(--d)',
@@ -2462,13 +2336,13 @@ function TuningMatrix() {
     className: "ph"
   }, /*#__PURE__*/React.createElement("span", {
     className: "pt"
-  }, "\u25C8 TUNING-MATRIX"), /*#__PURE__*/React.createElement("span", {
+  }, "◈ TUNING-MATRIX"), /*#__PURE__*/React.createElement("span", {
     style: {
       fontSize: '10px',
       color: 'var(--d)',
       letterSpacing: '.08em'
     }
-  }, "British Brass Band \xB7 Just Intonation Guide"), hasNotes && /*#__PURE__*/React.createElement("button", {
+  }, "British Brass Band · Just Intonation Guide"), hasNotes && /*#__PURE__*/React.createElement("button", {
     onClick: clearAll,
     style: {
       background: 'transparent',
@@ -2480,7 +2354,7 @@ function TuningMatrix() {
       cursor: 'pointer',
       marginLeft: 'auto'
     }
-  }, "\u2715 CLEAR ALL"), !hasNotes && /*#__PURE__*/React.createElement("span", {
+  }, "✕ CLEAR ALL"), !hasNotes && /*#__PURE__*/React.createElement("span", {
     style: {
       marginLeft: 'auto'
     }
@@ -2490,27 +2364,19 @@ function TuningMatrix() {
     className: "sg"
   }, /*#__PURE__*/React.createElement("label", null, "ROOT NOTE"), /*#__PURE__*/React.createElement("div", {
     className: "nbrow"
-  }, ND.map(function (n, i) {
-    return /*#__PURE__*/React.createElement("button", {
-      key: i,
-      className: "nb".concat(root === i ? ' on' : ''),
-      onClick: function onClick() {
-        return setRoot(i);
-      }
-    }, n);
-  }))), /*#__PURE__*/React.createElement("div", {
+  }, ND.map((n, i) => /*#__PURE__*/React.createElement("button", {
+    key: i,
+    className: `nb${root === i ? ' on' : ''}`,
+    onClick: () => setRoot(i)
+  }, n)))), /*#__PURE__*/React.createElement("div", {
     className: "sg"
   }, /*#__PURE__*/React.createElement("label", null, "CHORD TYPE"), /*#__PURE__*/React.createElement("div", {
     className: "nbrow"
-  }, CHORD_TYPES.map(function (c) {
-    return /*#__PURE__*/React.createElement("button", {
-      key: c.id,
-      className: "tb".concat(ctype === c.id ? ' on' : ''),
-      onClick: function onClick() {
-        return setCtype(c.id);
-      }
-    }, c.lbl);
-  })))), /*#__PURE__*/React.createElement("div", {
+  }, CHORD_TYPES.map(c => /*#__PURE__*/React.createElement("button", {
+    key: c.id,
+    className: `tb${ctype === c.id ? ' on' : ''}`,
+    onClick: () => setCtype(c.id)
+  }, c.lbl))))), /*#__PURE__*/React.createElement("div", {
     className: "cd"
   }, /*#__PURE__*/React.createElement("span", {
     className: "cname"
@@ -2523,70 +2389,63 @@ function TuningMatrix() {
     }
   }, ctype), /*#__PURE__*/React.createElement("div", {
     className: "ctones"
-  }, chordTones.map(function (t, i) {
-    return /*#__PURE__*/React.createElement("span", {
-      key: i,
-      className: "ct",
-      title: JI[ct.iv[i]].nm
-    }, i2n(t));
-  })), /*#__PURE__*/React.createElement("button", {
+  }, chordTones.map((t, i) => /*#__PURE__*/React.createElement("span", {
+    key: i,
+    className: "ct",
+    title: JI[ct.iv[i]].nm
+  }, i2n(t)))), /*#__PURE__*/React.createElement("button", {
     className: "pbtn",
     onClick: playChord
-  }, "\u25B6 PLAY (JI TUNING)")), hasNotes && VBOXES.length > 0 && /*#__PURE__*/React.createElement("div", {
+  }, "▶ PLAY (JI TUNING)")), hasNotes && VBOXES.length > 0 && /*#__PURE__*/React.createElement("div", {
     className: "vs",
     style: {
-      gridTemplateColumns: "repeat(".concat(Math.min(VBOXES.length, 5), ",1fr)")
+      gridTemplateColumns: `repeat(${Math.min(VBOXES.length, 5)},1fr)`
     }
-  }, VBOXES.map(function (b) {
-    return /*#__PURE__*/React.createElement("div", {
-      key: b.k,
-      className: "vbox",
-      style: {
-        borderColor: b.color + '55',
-        background: b.color + '0a'
-      }
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "vtit",
-      style: {
-        color: b.color
-      }
-    }, b.title, " [", v[b.k].length, "]"), /*#__PURE__*/React.createElement("div", {
-      className: "vinsts"
-    }, v[b.k].join(', ')));
-  })), /*#__PURE__*/React.createElement("div", {
+  }, VBOXES.map(b => /*#__PURE__*/React.createElement("div", {
+    key: b.k,
+    className: "vbox",
+    style: {
+      borderColor: b.color + '55',
+      background: b.color + '0a'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "vtit",
+    style: {
+      color: b.color
+    }
+  }, b.title, " [", v[b.k].length, "]"), /*#__PURE__*/React.createElement("div", {
+    className: "vinsts"
+  }, v[b.k].join(', '))))), /*#__PURE__*/React.createElement("div", {
     className: "mx"
   }, /*#__PURE__*/React.createElement("div", {
     className: "mxinner"
   }, /*#__PURE__*/React.createElement("div", {
     className: "mxhdr"
-  }, /*#__PURE__*/React.createElement("span", null, "INSTRUMENT"), /*#__PURE__*/React.createElement("span", null, "KEY"), /*#__PURE__*/React.createElement("span", null, "WRITTEN"), /*#__PURE__*/React.createElement("span", null, "CONCERT"), /*#__PURE__*/React.createElement("span", null, "DEG."), /*#__PURE__*/React.createElement("span", null, "JI ADJUSTMENT FROM ET")), INST.map(function (inst) {
-    var a = analyze(inst.id);
+  }, /*#__PURE__*/React.createElement("span", null, "INSTRUMENT"), /*#__PURE__*/React.createElement("span", null, "KEY"), /*#__PURE__*/React.createElement("span", null, "WRITTEN"), /*#__PURE__*/React.createElement("span", null, "CONCERT"), /*#__PURE__*/React.createElement("span", null, "DEG."), /*#__PURE__*/React.createElement("span", null, "JI ADJUSTMENT FROM ET")), INST.map(inst => {
+    const a = analyze(inst.id);
     return /*#__PURE__*/React.createElement("div", {
       key: inst.id,
-      className: "mxrow".concat(a ? a.inChord ? ' ok' : ' ng' : '')
+      className: `mxrow${a ? a.inChord ? ' ok' : ' ng' : ''}`
     }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
       style: {
         fontSize: '12px',
         color: 'var(--t)'
       }
     }, inst.name)), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
-      className: "ikey ".concat(inst.key === 'Eb' ? 'eb' : 'bb')
+      className: `ikey ${inst.key === 'Eb' ? 'eb' : 'bb'}`
     }, inst.key)), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("select", {
       className: "nsel",
       value: notes[inst.id],
-      onChange: function onChange(e) {
-        return setNotes(function (p) {
-          return _objectSpread(_objectSpread({}, p), {}, _defineProperty({}, inst.id, e.target.value));
-        });
-      }
+      onChange: e => setNotes(p => ({
+        ...p,
+        [inst.id]: e.target.value
+      }))
     }, /*#__PURE__*/React.createElement("option", {
       value: ""
-    }, "\u2500\u2500"), NI.map(function (n) {
-      return /*#__PURE__*/React.createElement("option", {
-        key: n,
-        value: n
-      }, n);
-    }))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
+    }, "──"), NI.map(n => /*#__PURE__*/React.createElement("option", {
+      key: n,
+      value: n
+    }, n)))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
       style: {
         fontSize: '14px',
         color: 'var(--c)',
@@ -2610,22 +2469,19 @@ function TuningMatrix() {
         fontSize: '10px',
         color: 'var(--r)'
       }
-    }, "\u26A0 OUT OF CHORD") : /*#__PURE__*/React.createElement("span", {
+    }, "⚠ OUT OF CHORD") : /*#__PURE__*/React.createElement("span", {
       style: {
         color: 'var(--d)'
       }
-    }, "\u2500\u2500")));
+    }, "──")));
   }))), /*#__PURE__*/React.createElement("div", {
     className: "ji"
   }, /*#__PURE__*/React.createElement("div", {
     className: "jit"
-  }, "\u25C8 JUST INTONATION REFERENCE \u2500 PITCH ADJUSTMENTS FROM EQUAL TEMPERAMENT"), /*#__PURE__*/React.createElement("div", {
+  }, "◈ JUST INTONATION REFERENCE ─ PITCH ADJUSTMENTS FROM EQUAL TEMPERAMENT"), /*#__PURE__*/React.createElement("div", {
     className: "jig"
-  }, Object.entries(JI).map(function (_ref4) {
-    var _ref5 = _slicedToArray(_ref4, 2),
-      iv = _ref5[0],
-      info = _ref5[1];
-    var MAX_C = 35,
+  }, Object.entries(JI).map(([iv, info]) => {
+    const MAX_C = 35,
       pct = Math.abs(info.c) / MAX_C,
       col = cColor(info.c);
     return /*#__PURE__*/React.createElement("div", {
@@ -2657,13 +2513,14 @@ function TuningMatrix() {
         background: 'rgba(255,255,255,.2)'
       }
     }), info.c !== 0 && /*#__PURE__*/React.createElement("div", {
-      style: _defineProperty({
+      style: {
         position: 'absolute',
         top: 0,
         height: '100%',
-        width: "".concat(pct * 50, "%"),
-        background: col
-      }, info.c > 0 ? 'left' : 'right', '50%')
+        width: `${pct * 50}%`,
+        background: col,
+        [info.c > 0 ? 'left' : 'right']: '50%'
+      }
     }))), /*#__PURE__*/React.createElement("span", {
       style: {
         fontFamily: 'monospace',
@@ -2673,72 +2530,47 @@ function TuningMatrix() {
         minWidth: '38px',
         textAlign: 'right'
       }
-    }, info.c === 0 ? '±0' : info.c > 0 ? "+".concat(info.c) : info.c, "\xA2"));
+    }, info.c === 0 ? '±0' : info.c > 0 ? `+${info.c}` : info.c, "¢"));
   }))));
 }
 
 /* ══════════════ APP ══════════════ */
 function App() {
-  var _useState27 = useState('analyzer'),
-    _useState28 = _slicedToArray(_useState27, 2),
-    tab = _useState28[0],
-    setTab = _useState28[1];
+  const [tab, setTab] = useState('analyzer');
   /* Shared audio state — lifted to App so ToneAdvisor can read same stream */
-  var audioCtxRef = useRef(null);
-  var analyserRef = useRef(null);
-  var streamRef = useRef(null);
-  var _useState29 = useState(false),
-    _useState30 = _slicedToArray(_useState29, 2),
-    micRunning = _useState30[0],
-    setMicRunning = _useState30[1];
-  var _useState31 = useState('READY'),
-    _useState32 = _slicedToArray(_useState31, 2),
-    micStatus = _useState32[0],
-    setMicStatus = _useState32[1];
-  var startMic = useCallback(/*#__PURE__*/_asyncToGenerator(/*#__PURE__*/_regenerator().m(function _callee2() {
-    var stream, actx, an, _t2;
-    return _regenerator().w(function (_context2) {
-      while (1) switch (_context2.p = _context2.n) {
-        case 0:
-          _context2.p = 0;
-          setMicStatus('REQUESTING...');
-          _context2.n = 1;
-          return navigator.mediaDevices.getUserMedia({
-            audio: {
-              echoCancellation: false,
-              noiseSuppression: false,
-              autoGainControl: false
-            },
-            video: false
-          });
-        case 1:
-          stream = _context2.v;
-          streamRef.current = stream;
-          actx = new (window.AudioContext || window.webkitAudioContext)();
-          an = actx.createAnalyser();
-          an.fftSize = 4096;
-          an.smoothingTimeConstant = 0.8;
-          actx.createMediaStreamSource(stream).connect(an);
-          audioCtxRef.current = actx;
-          analyserRef.current = an;
-          setMicRunning(true);
-          setMicStatus('LIVE');
-          _context2.n = 3;
-          break;
-        case 2:
-          _context2.p = 2;
-          _t2 = _context2.v;
-          setMicStatus('ERR: ' + (_t2.message || 'denied'));
-        case 3:
-          return _context2.a(2);
-      }
-    }, _callee2, null, [[0, 2]]);
-  })), []);
-  var stopMic = useCallback(function () {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(function (t) {
-        return t.stop();
+  const audioCtxRef = useRef(null);
+  const analyserRef = useRef(null);
+  const streamRef = useRef(null);
+  const [micRunning, setMicRunning] = useState(false);
+  const [micStatus, setMicStatus] = useState('READY');
+  const startMic = useCallback(async () => {
+    try {
+      setMicStatus('REQUESTING...');
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: false,
+          noiseSuppression: false,
+          autoGainControl: false
+        },
+        video: false
       });
+      streamRef.current = stream;
+      const actx = new (window.AudioContext || window.webkitAudioContext)();
+      const an = actx.createAnalyser();
+      an.fftSize = 4096;
+      an.smoothingTimeConstant = 0.8;
+      actx.createMediaStreamSource(stream).connect(an);
+      audioCtxRef.current = actx;
+      analyserRef.current = an;
+      setMicRunning(true);
+      setMicStatus('LIVE');
+    } catch (e) {
+      setMicStatus('ERR: ' + (e.message || 'denied'));
+    }
+  }, []);
+  const stopMic = useCallback(() => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(t => t.stop());
       streamRef.current = null;
     }
     if (audioCtxRef.current) {
@@ -2749,15 +2581,11 @@ function App() {
     setMicRunning(false);
     setMicStatus('STOPPED');
   }, []);
-  useEffect(function () {
-    return function () {
-      if (streamRef.current) streamRef.current.getTracks().forEach(function (t) {
-        return t.stop();
-      });
-      if (audioCtxRef.current) audioCtxRef.current.close();
-    };
+  useEffect(() => () => {
+    if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop());
+    if (audioCtxRef.current) audioCtxRef.current.close();
   }, []);
-  var TABS = [{
+  const TABS = [{
     id: 'analyzer',
     label: '◉ SOUND-ANALYZER'
   }, {
@@ -2777,21 +2605,17 @@ function App() {
     className: "la"
   }, "SOUND"), /*#__PURE__*/React.createElement("span", {
     className: "ld"
-  }, "\u25C8"), /*#__PURE__*/React.createElement("span", {
+  }, "◈"), /*#__PURE__*/React.createElement("span", {
     className: "lt"
   }, "TUNING")), /*#__PURE__*/React.createElement("div", {
     className: "hsub"
-  }, "ANALYZER \xB7 MATRIX \xB7 TONE ADVISOR \xB7 BRASS BAND EDITION")), /*#__PURE__*/React.createElement("nav", {
+  }, "ANALYZER · MATRIX · TONE ADVISOR · BRASS BAND EDITION")), /*#__PURE__*/React.createElement("nav", {
     className: "tabs"
-  }, TABS.map(function (t) {
-    return /*#__PURE__*/React.createElement("button", {
-      key: t.id,
-      className: "tab".concat(tab === t.id ? ' on' : ''),
-      onClick: function onClick() {
-        return setTab(t.id);
-      }
-    }, t.label);
-  }))), /*#__PURE__*/React.createElement("main", {
+  }, TABS.map(t => /*#__PURE__*/React.createElement("button", {
+    key: t.id,
+    className: `tab${tab === t.id ? ' on' : ''}`,
+    onClick: () => setTab(t.id)
+  }, t.label)))), /*#__PURE__*/React.createElement("main", {
     className: "main"
   }, tab === 'analyzer' && /*#__PURE__*/React.createElement(SoundAnalyzer, {
     analyserRef: analyserRef,
@@ -2807,9 +2631,52 @@ function App() {
     micRunning: micRunning
   })), /*#__PURE__*/React.createElement("footer", {
     className: "ftr"
-  }, "SOUND-ANALYZER + TUNING-MATRIX + TONE-ADVISOR \xB7 British Brass Band Edition \xB7 Web Audio API"));
+  }, "SOUND-ANALYZER + TUNING-MATRIX + TONE-ADVISOR · British Brass Band Edition · Web Audio API"));
 }
-ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App, null));
+
+/* ── ErrorBoundary ── */
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      error: null,
+      info: null
+    };
+  }
+  componentDidCatch(error, info) {
+    this.setState({
+      error,
+      info
+    });
+  }
+  render() {
+    if (this.state.error) {
+      return React.createElement('div', {
+        style: {
+          color: '#ff3344',
+          padding: '20px',
+          background: '#020508',
+          minHeight: '100vh',
+          fontFamily: 'monospace',
+          whiteSpace: 'pre-wrap',
+          fontSize: '12px',
+          lineHeight: '1.6'
+        }
+      }, '⚠ STARTUP ERROR\n\n' + String(this.state.error) + '\n\nStack:\n' + (this.state.error.stack || '') + '\n\nComponent:\n' + (this.state.info && this.state.info.componentStack || ''));
+    }
+    return this.props.children;
+  }
+}
+
+/* ── Safe mount ── */
+(function () {
+  var root = document.getElementById('root');
+  try {
+    ReactDOM.createRoot(root).render(React.createElement(ErrorBoundary, null, React.createElement(App, null)));
+  } catch (e) {
+    root.innerHTML = '<div style="color:#ff3344;padding:20px;font-family:monospace;white-space:pre-wrap;background:#020508;min-height:100vh;font-size:12px">' + '<b>⚠ FATAL ERROR (React failed to mount)</b>\n\n' + String(e) + '\n\n' + (e.stack || '') + '</div>';
+  }
+})();
 
 </script>
 </body>
